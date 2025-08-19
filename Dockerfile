@@ -28,5 +28,12 @@ COPY . .
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+ARG PUID
+ARG PGID
+
+RUN groupadd -g ${PGID} appgroup && useradd -u ${PUID} -g appgroup appuser
+
+USER ${PUID}:${PGID}
+
 # Start with the entrypoint script (sets up cron)
 ENTRYPOINT ["/entrypoint.sh"]
