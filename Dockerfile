@@ -28,8 +28,8 @@ COPY . .
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ARG PUID=1000
-ARG PGID=1000
+ARG PUID=0
+ARG PGID=0
 
 RUN groupadd -g ${PGID} appgroup && useradd -u ${PUID} -g ${PGID} appuser
 USER ${PUID}:${PGID}
