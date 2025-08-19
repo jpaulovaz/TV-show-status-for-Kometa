@@ -1,8 +1,11 @@
+## AJUSTEI O SCRIPT PARA ACEITAR CARACTERES PT-BR;
+## AJUSTEI PARA NÃO CRIAR OVERLAY COMO BACKDROP, POIS USO UMA IMAGEM DE FUNDO PRÓPRIA;
+## CORRIGI O FATO DO SCRIPT NÃO SALVAR OS ARQUIVOS NA PASTA DO KOMETA;
+## AINDA VOU EFETUAR ALGUNS AJUSTES
+## CONFIGURADO PARA USO PESSOAL E PODE NÃO SE ADEQUAR A SUA NECESSIDADE.
+
+
 # 📺 TV Show Status for Kometa
-
-This script checks your [Sonarr](https://sonarr.tv/) for your TV Shows statuses and creates .yml files which can be used by [Kometa](https://kometa.wiki/) to create collections and overlays.</br>
-
-
 Categories:
 *  New shows, that were added in the past x days
 *  Shows for which a finale was added which aired in the past x days

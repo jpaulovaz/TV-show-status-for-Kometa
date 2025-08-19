@@ -1,13 +1,14 @@
-version: "3.8"
-
 services:
   tssk:
-    image: timothe/tssk:latest
+    image: tssk_jp
     container_name: tssk
     environment:
-      - CRON=0 2 * * * # every day at 2am
-      - DOCKER=true # important for path reference
+      - CRON=0 2 * * * # todos os dias às 02h da manhã
+      - DOCKER=true # Importante para executar em docker
+      - PUID=1000
+      - PGID=1000
     volumes:
-      - /your/local/config/tssk:/app/config
-      - /your/local/kometa/config:/config/kometa
+      - /caminho/para/pasta/tssk:/app/config
+      - /caminho/para/pasta/config_do_kometa:/app/config/kometa
     restart: unless-stopped
+    network_mode: bridge
