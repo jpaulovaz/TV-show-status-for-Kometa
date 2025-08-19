@@ -1205,8 +1205,9 @@ def main():
             create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
         
         else:
-            create_overlay_yaml("TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
                                {"backdrop": config.get("backdrop_season_finale", {}),
+                                "text": config.get("text_season_finale", {})})
             
             create_collection_yaml("TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
         
