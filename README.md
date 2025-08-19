@@ -94,7 +94,7 @@ version: "3.8"
 
 services:
   tssk:
-    image: timothe/tssk:latest
+    image: joaopaulofvaz/tssk
     container_name: tssk
     environment:
       - CRON=0 2 * * * # every day at 2am
