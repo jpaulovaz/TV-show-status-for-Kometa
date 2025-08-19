@@ -1196,11 +1196,19 @@ def main():
             for show in season_finale_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
-                           {"backdrop": config.get("backdrop_season_finale", {}),
-                            "text": config.get("text_season_finale", {})})
+        if IS_DOCKER:
+
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
+                               {"backdrop": config.get("backdrop_season_finale", {}),
+                                "text": config.get("text_season_finale", {})})
+
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
+        else:
+            create_overlay_yaml("TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
+                               {"backdrop": config.get("backdrop_season_finale", {}),
+            
+            create_collection_yaml("TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
         
         # ---- Recent Final Episodes ----
         final_episode_shows = find_recent_final_episodes(
