@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# Copiar arquivos padrão para o volume se não existirem
-if [ ! -f /app/config/config.example.yml ]; then
-  cp /app/config.example.yml /app/config/config.example.yml
-fi
-
-# Exemplo para copiar uma pasta inteira (se necessário)
-if [ ! -d /app/config/kometa ]; then
-  cp -r /app/kometa /app/config/kometa
+# Se a pasta /app/config estiver vazia, copie todos os arquivos/pastas padrão
+if [ -z "$(ls -A /app/config)" ]; then
+  cp -r /app/config.example.yml /app/config/
+  cp -r /app/kometa /app/config/
 fi
 
 # Ajustar permissões dos arquivos/pastas
