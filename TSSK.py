@@ -1275,7 +1275,7 @@ def main():
         create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
 
         # ---- New Show ----
-        create_new_show_overlay_yaml("TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
+        create_new_show_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
                                    {"backdrop": get_config_section(config, "backdrop_new_show"),
                                     "text": get_config_section(config, "text_new_show")}, 
                                    recent_days_new_show)
