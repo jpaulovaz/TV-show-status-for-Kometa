@@ -28,5 +28,8 @@ COPY . .
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+#COPIAR ARQUIVOS PARA AS PASTAS
+COPY config /app/config
+
 # Start with the entrypoint script (sets up cron)
 ENTRYPOINT ["/entrypoint.sh"]
