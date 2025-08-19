@@ -13,7 +13,7 @@ os.makedirs("/app/config/kometa/tssk", exist_ok=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "1.8"
 overlay_path = "/app/config/kometa/tssk/"
-collection_path = "/app/config/kometa/"
+collection_path = "/app/config/kometa/tssk/"
 puid = int(os.getenv("PUID", "1000"))
 pgid = int(os.getenv("PGID", "1000"))
 
