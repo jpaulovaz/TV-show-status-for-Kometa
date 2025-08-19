@@ -3,6 +3,9 @@ import yaml
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import sys
+if sys.version_info >= (3, 7):
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 import os
 
 # Constants
@@ -810,6 +813,28 @@ def format_date(yyyy_mm_dd, date_format, capitalize=False):
     for marker, replacement in replacements.items():
         strftime_format = strftime_format.replace(marker, replacement)
     
+        try:
+        result = dt_obj.strftime(strftime_format)
+        # Tradução manual do dia da semana
+        dias_semana = {
+            'Mon': 'SEG',
+            'Tue': 'TER',
+            'Wed': 'QUA',
+            'Thu': 'QUI',
+            'Fri': 'SEX',
+            'Sat': 'SAB',
+            'Sun': 'DOM'
+        }
+        if '%a' in strftime_format:
+            for eng, pt in dias_semana.items():
+                result = result.replace(eng, pt)
+        if capitalize:
+            result = result.upper()
+        return result
+    except ValueError as e:
+        print(f"{RED}Error: Invalid date format '{date_format}'. Using default format.{RESET}")
+        return yyyy_mm_dd
+    
     try:
         result = dt_obj.strftime(strftime_format)
         if capitalize:
@@ -853,7 +878,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
 
     # Only add backdrop overlay if enabled
     if enable_backdrop and all_tvdb_ids:
-        backdrop_config["name"] = "backdrop"
+        backdrop_config["name"] = "fundo_vazio"
         all_tvdb_ids_str = ", ".join(str(i) for i in sorted(all_tvdb_ids) if i)
         
         overlays_dict["backdrop"] = {
@@ -914,7 +939,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
     final_output = {"overlays": overlays_dict}
     
     with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False)
+        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True, allow_unicode=True)
 
 def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
     """Create overlay YAML for new shows using Plex filters instead of Sonarr data"""
@@ -928,7 +953,7 @@ def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
     enable_backdrop = backdrop_config.pop("enable", True)
     
     if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
+        backdrop_config["name"] = "fundo_vazio"
         overlays_dict["backdrop"] = {
             "plex_all": True,
             "filters": {
@@ -959,7 +984,7 @@ def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
     final_output = {"overlays": overlays_dict}
     
     with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False)
+        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
 def create_collection_yaml(output_file, shows, config):
     import yaml
@@ -1041,7 +1066,7 @@ def create_collection_yaml(output_file, shows, config):
         }
         
         with open(output_file, "w", encoding="utf-8") as f:
-            yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False)
+            yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False, allow_unicode=True)
         return
     
     tvdb_ids = [s['tvdbId'] for s in shows if s.get('tvdbId')]
@@ -1062,7 +1087,7 @@ def create_collection_yaml(output_file, shows, config):
         }
         
         with open(output_file, "w", encoding="utf-8") as f:
-            yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False)
+            yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False, allow_unicode=True)
         return
 
     # Convert to comma-separated
@@ -1111,7 +1136,7 @@ def create_collection_yaml(output_file, shows, config):
 
     with open(output_file, "w", encoding="utf-8") as f:
         # Use SafeDumper so our custom representer is used
-        yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False)
+        yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False, allow_unicode=True)
 
 
 def main():
