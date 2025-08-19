@@ -813,7 +813,7 @@ def format_date(yyyy_mm_dd, date_format, capitalize=False):
     for marker, replacement in replacements.items():
         strftime_format = strftime_format.replace(marker, replacement)
     
-        try:
+    try:
         result = dt_obj.strftime(strftime_format)
         # Tradução manual do dia da semana
         dias_semana = {
@@ -939,7 +939,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
     final_output = {"overlays": overlays_dict}
     
     with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True, allow_unicode=True)
+        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
 def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
     """Create overlay YAML for new shows using Plex filters instead of Sonarr data"""
