@@ -1,286 +1,286 @@
-sonarr_url: 'http://localhost:8989'
-sonarr_api_key: 'YOUR_SONARR_API_KEY'
+sonarr_url: 'http://192.168.0.1:8989'
+sonarr_api_key: 'seu_api_sonarr'
 
-skip_unmonitored: true
+skip_unmonitored: true #Ajuste para falso se quiser monitorar também o que não está sendo monitorado pelo Sonarr
 utc_offset: +0
 
 ################################################################################
-##########                     NEW SEASON SOON:                       ##########
+##########                     NOVA TEMPORADA EM BREVE                ##########
 ################################################################################
 
 future_days_new_season: 31
 
 collection_new_season:
-  collection_name: "New Season Soon"
+  collection_name: "Nova Temporada em Breve"
   smart_label: title.desc
-  sort_title: "+1_2New Season Soon"
+  sort_title: "+1_2Nova Temporada em Breve"
   ignore_blank_results: true
 
 backdrop_new_season:
   enable: true
-  back_color: "#228B22"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
 
 text_new_season:
   date_format: "ddd dd/mm"
   capitalize_dates: true
-  use_text: "NEW SEASON"
+  use_text: "Nova Temporada em"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
   font_color: "#FFFFFF"
 
 ################################################################################
-##########                    NEW SEASON STARTED:                     ##########
+##########                    NOVA TEMPORADA INICIADA:                ##########
 ################################################################################
 
 recent_days_new_season_started: 7
 
 collection_new_season_started:
-  collection_name: "New Season Started"
+  collection_name: "Nova Temporada Iniciada"
   smart_label: title.desc
-  sort_title: "+1_2New Season Started"
+  sort_title: "+1_2Nova Temporada Iniciada"
   ignore_blank_results: true
 
 backdrop_new_season_started:
   enable: true
-  back_color: "#EB3233"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_new_season_started:
-  use_text: "NEW SEASON STARTED"
+  use_text: "Nova Temporada Iniciada"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
   font_color: "#FFFFFF"
   
 ################################################################################
-##########                         NEW SHOW:                          ##########
+##########                         NOVO SERIADO:                      ##########
 ################################################################################
 
 recent_days_new_show: 7
 
 collection_new_show:
-  collection_name: "New Show"
+  collection_name: "Adicionado Recentemente"
   smart_label: title.desc
-  sort_title: "+1_2New Show"
+  sort_title: "+1_2Adicionado Recentemente"
   ignore_blank_results: true
 
 backdrop_new_show:
   enable: true
-  back_color: "#EB3233"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_new_show:
-  use_text: "RECENTLY ADDED"
+  use_text: "Adicionado Recentemente"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
   font_color: "#FFFFFF"
 
 ################################################################################
-##########                     UPCOMING EPISODE:                      ##########
+##########                     PRÓXIMO EPISÓDIO:                      ##########
 ################################################################################
 
 future_days_upcoming_episode: 31
 
 collection_upcoming_episode:
-  collection_name: "Upcoming Episode"
+  collection_name: "Próximo Episódio"
   smart_label: title.desc
-  sort_title: "+1_2Upcoming Episode"
+  sort_title: "+1_2Próximo Episódio"
   ignore_blank_results: true
   
 backdrop_upcoming_episode:
   enable: true
-  back_color: "#006580"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+  
+
 
 text_upcoming_episode:
   date_format: "ddd dd/mm"
   capitalize_dates: true
-  use_text: "NEXT EPISODE"
+  use_text: "Próximo Episódio"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
   font_color: "#FFFFFF"
   
 ################################################################################
-##########                      UPCOMING FINALE:                      ##########
+##########                      EPISÓDIO FINAL:                       ##########
 ################################################################################
 
 future_days_upcoming_finale: 31
 
 collection_upcoming_finale:
-  collection_name: "Upcoming Finale"
+  collection_name: "Chegando ao Fim"
   smart_label: title.desc
-  sort_title: "+1_2Upcoming Finale"
+  sort_title: "+1_2Chegando ao Fim"
   ignore_blank_results: true
   
 backdrop_upcoming_finale:
   enable: true
-  back_color: "#9932CC"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_upcoming_finale:
   date_format: "ddd dd/mm"      # e.g., "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   capitalize_dates: true
-  use_text: "FINALE AIRS"
+  use_text: "Episódio final"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
   font_color: "#FFFFFF"
 
 ################################################################################
-##########                           ENDED:                           ##########
+##########                           FINALIZADO:                      ##########
 ################################################################################
 
 collection_ended:
-  collection_name: "Ended Shows"
+  collection_name: "Seriados Finalizados"
   smart_label: title.desc
-  sort_title: "+1_2Ended Shows"
+  sort_title: "+1_2Seriados Finalizados"
   ignore_blank_results: true
 
 backdrop_ended:
-  enable: false
-  back_color: "#000000"
-  back_height: 90
-  back_width: 950
+  enable: true
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_ended:
-  use_text: "E N D E D"
+  use_text: "F I N A L I Z A D O"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 50
-  font_size: 70
-  font_color: "#00ff3d"
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
+  font_color: "#FFFFFF"
 
 ################################################################################
-##########                         RETURNING:                         ##########
+##########                         RETORNANDO:                         ##########
 ################################################################################
 
 collection_returning:
-  collection_name: "Returning Shows"
+  collection_name: "Seriados que Retornarão"
   smart_label: title.desc
-  sort_title: "+1_2Returning Shows"
+  sort_title: "+1_2Seriados que Retornarão"
   ignore_blank_results: true
 
 backdrop_returning:
-  enable: false
-  back_color: "#000000"
-  back_height: 90
-  back_width: 950
+  enable: true
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_returning:
-  use_text: "R E T U R N I N G"
+  use_text: "R E T O R N A N D O"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 50
-  font_size: 70
-  font_color: "#ff9000"
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
+  font_color: "#FFFFFF"
 
 ################################################################################
-##########                       SEASON FINALE:                       ##########
+##########                       FIANAL DE TEMPORADA:                 ##########
 ################################################################################
 
 recent_days_season_finale: 7
 
 collection_season_finale:
-  collection_name: "Season Finale"
+  collection_name: "Final de Temporada"
   smart_label: title.desc
-  sort_title: "+1_2Season Finale"
+  sort_title: "+1_2Final de Temporada"
   ignore_blank_results: true
 
 backdrop_season_finale:
   enable: true
-  back_color: "#ffb902"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_season_finale:
-  use_text: "SEASON FINALE"
+  use_text: "Final de Temporada"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
-  font_color: "#000000"
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
+  font_color: "#FFFFFF"
 
 ################################################################################
-##########                       FINAL EPISODE:                       ##########
+##########                       EPISÓDIO FINAL:                      ##########
 ################################################################################
 
 recent_days_final_episode: 7
 
 collection_final_episode:
-  collection_name: "Final Episode"
+  collection_name: "Episódio Final"
   smart_label: title.desc
-  sort_title: "+1_2Final Episode"
+  sort_title: "+1_2Episódio Final"
   ignore_blank_results: true
 
 backdrop_final_episode:
   enable: true
-  back_color: "#ffb902"
-  back_height: 90
-  back_width: 950
+  file: ./config/tssk/overlays/recently_added_vazio.png
   horizontal_align: center
-  horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  horizontal_offset: 0
+  vertical_offset: 15
+
 
 text_final_episode:
-  use_text: "FINAL EPISODE"
+  use_text: "Episódio Final"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
-  font_color: "#000000"
+  vertical_offset: 55
+  font_size: 60
+  #font: Ajuste com a fonte dessejada.
+  font_color: "#FFFFFF"

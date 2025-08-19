@@ -1205,7 +1205,7 @@ def main():
             create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
         
         else:
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
+            create_overlay_yaml("TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
                                {"backdrop": config.get("backdrop_season_finale", {}),
                                 "text": config.get("text_season_finale", {})})
             
@@ -1226,11 +1226,21 @@ def main():
             for show in final_episode_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
-                           {"backdrop": config.get("backdrop_final_episode", {}),
-                            "text": config.get("text_final_episode", {})})
+        if IS_DOCKER:
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
+                               {"backdrop": config.get("backdrop_final_episode", {}),
+                                "text": config.get("text_final_episode", {})})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
+        
+        else:
+            create_overlay_yaml("TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
+                               {"backdrop": config.get("backdrop_final_episode", {}),
+                                "text": config.get("text_final_episode", {})})
+        
+            create_collection_yaml("TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
+        
+           
 
         # Track all tvdbIds to exclude from the "returning" category
         all_included_tvdb_ids = set()
@@ -1256,12 +1266,21 @@ def main():
             print(f"\n{RED}No shows with new seasons starting within {future_days_new_season} days.{RESET}")
         
         # Create YAMLs for new seasons
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
-                           {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
-                            "text": config.get("text_new_season", config.get("text", {}))})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
-
+        if IS_DOCKER:
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
+                               {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
+                                "text": config.get("text_new_season", config.get("text", {}))})
+        
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
+        
+        else:
+            create_overlay_yaml("TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
+                               {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
+                                "text": config.get("text_new_season", config.get("text", {}))})
+        
+            create_collection_yaml("TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
+        
         # ---- New Season Started ----
         new_season_started_shows = find_new_season_started(
             sonarr_url, sonarr_api_key, recent_days_new_season_started, utc_offset, skip_unmonitored
@@ -1277,18 +1296,34 @@ def main():
             for show in new_season_started_shows:
                 print(f"- {show['title']} (Season {show['seasonNumber']}) started on {show['airDate']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
-                           {"backdrop": config.get("backdrop_new_season_started", {}),
-                            "text": config.get("text_new_season_started", {})})
+        if IS_DOCKER:
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
+                               {"backdrop": config.get("backdrop_new_season_started", {}),
+                                "text": config.get("text_new_season_started", {})})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
 
-        # ---- New Show ----
-        create_new_show_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_show"),
-                                    "text": get_config_section(config, "text_new_show")}, 
-                                   recent_days_new_show)
+        else:
+            create_overlay_yaml("TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
+                               {"backdrop": config.get("backdrop_new_season_started", {}),
+                                "text": config.get("text_new_season_started", {})})
+            
+            create_collection_yaml("TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
         
+        # ---- New Show ----
+        if IS_DOCKER:
+
+            create_new_show_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
+                                       {"backdrop": get_config_section(config, "backdrop_new_show"),
+                                        "text": get_config_section(config, "text_new_show")}, 
+                                       recent_days_new_show)
+        else:
+            
+            create_new_show_overlay_yaml("TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
+                                       {"backdrop": get_config_section(config, "backdrop_new_show"),
+                                        "text": get_config_section(config, "text_new_show")}, 
+                                       recent_days_new_show)
+
         print(f"\n{GREEN}New show overlay created for shows added within the past {recent_days_new_show} days{RESET}")
 
         # ---- Upcoming Non-Finale Episodes ----
@@ -1309,12 +1344,22 @@ def main():
             for show in upcoming_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
-                           {"backdrop": config.get("backdrop_upcoming_episode", {}),
-                            "text": config.get("text_upcoming_episode", {})})
+        if IS_DOCKER:
+
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
+                                "text": config.get("text_upcoming_episode", {})})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
         
+        else:
+            create_overlay_yaml("TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
+                                "text": config.get("text_upcoming_episode", {})})
+        
+            create_collection_yaml("TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
+        
+
         # ---- Upcoming Finale Episodes ----
         finale_eps, skipped_finales = find_upcoming_finales(
             sonarr_url, sonarr_api_key, future_days_upcoming_finale, utc_offset, skip_unmonitored
@@ -1333,12 +1378,20 @@ def main():
             for show in finale_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
-                           {"backdrop": config.get("backdrop_upcoming_finale", {}),
-                            "text": config.get("text_upcoming_finale", {})})
+        if IS_DOCKER:
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
+                                "text": config.get("text_upcoming_finale", {})})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
-
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
+        
+        else:
+            create_overlay_yaml("TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
+                                "text": config.get("text_upcoming_finale", {})})
+        
+            create_collection_yaml("TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
+        
         # ---- skipped Shows ----
         if skipped_shows:
             print(f"\n{ORANGE}Skipped shows (unmonitored or new show):{RESET}")
@@ -1362,11 +1415,19 @@ def main():
 #            for show in ended_shows:
 #                print(f"- {show['title']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
-                           {"backdrop": config.get("backdrop_ended", {}),
-                            "text": config.get("text_ended", {})})
+        if IS_DOCKER
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
+                               {"backdrop": config.get("backdrop_ended", {}),
+                                "text": config.get("text_ended", {})})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
+        
+        else:
+            create_overlay_yaml("TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
+                               {"backdrop": config.get("backdrop_ended", {}),
+                                "text": config.get("text_ended", {})})
+        
+            create_collection_yaml("TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
         
         # ---- Returning Shows ----
         returning_shows = find_returning_shows(sonarr_url, sonarr_api_key, all_included_tvdb_ids)
@@ -1379,12 +1440,21 @@ def main():
 #            for show in returning_shows:
 #                print(f"- {show['title']}")
         
-        create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
-                           {"backdrop": config.get("backdrop_returning", {}),
-                            "text": config.get("text_returning", {})})
+        if IS_DOCKER:
+            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
+                               {"backdrop": config.get("backdrop_returning", {}),
+                                "text": config.get("text_returning", {})})
         
-        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
+            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
         
+        else:
+            create_overlay_yaml("TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
+                               {"backdrop": config.get("backdrop_returning", {}),
+                                "text": config.get("text_returning", {})})
+        
+            create_collection_yaml("TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
+        
+
         print(f"\nAll YAML files created successfully")
 
         # Calculate and display runtime
