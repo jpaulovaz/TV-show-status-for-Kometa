@@ -1195,7 +1195,7 @@ def main():
             for show in season_finale_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
         
-        create_overlay_yaml("TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
                            {"backdrop": config.get("backdrop_season_finale", {}),
                             "text": config.get("text_season_finale", {})})
         
@@ -1216,7 +1216,7 @@ def main():
             for show in final_episode_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
         
-        create_overlay_yaml("TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
                            {"backdrop": config.get("backdrop_final_episode", {}),
                             "text": config.get("text_final_episode", {})})
         
@@ -1246,7 +1246,7 @@ def main():
             print(f"\n{RED}No shows with new seasons starting within {future_days_new_season} days.{RESET}")
         
         # Create YAMLs for new seasons
-        create_overlay_yaml("TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
                            {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
                             "text": config.get("text_new_season", config.get("text", {}))})
         
@@ -1267,7 +1267,7 @@ def main():
             for show in new_season_started_shows:
                 print(f"- {show['title']} (Season {show['seasonNumber']}) started on {show['airDate']}")
         
-        create_overlay_yaml("TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
                            {"backdrop": config.get("backdrop_new_season_started", {}),
                             "text": config.get("text_new_season_started", {})})
         
@@ -1299,7 +1299,7 @@ def main():
             for show in upcoming_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
         
-        create_overlay_yaml("TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
                            {"backdrop": config.get("backdrop_upcoming_episode", {}),
                             "text": config.get("text_upcoming_episode", {})})
         
@@ -1323,7 +1323,7 @@ def main():
             for show in finale_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
         
-        create_overlay_yaml("TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
                            {"backdrop": config.get("backdrop_upcoming_finale", {}),
                             "text": config.get("text_upcoming_finale", {})})
         
@@ -1352,7 +1352,7 @@ def main():
 #            for show in ended_shows:
 #                print(f"- {show['title']}")
         
-        create_overlay_yaml("TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
                            {"backdrop": config.get("backdrop_ended", {}),
                             "text": config.get("text_ended", {})})
         
@@ -1369,7 +1369,7 @@ def main():
 #            for show in returning_shows:
 #                print(f"- {show['title']}")
         
-        create_overlay_yaml("TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
+        create_overlay_yaml("../config/kometa/tssk/TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
                            {"backdrop": config.get("backdrop_returning", {}),
                             "text": config.get("text_returning", {})})
         
