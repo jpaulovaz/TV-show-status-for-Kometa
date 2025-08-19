@@ -1200,7 +1200,7 @@ def main():
                            {"backdrop": config.get("backdrop_season_finale", {}),
                             "text": config.get("text_season_finale", {})})
         
-        create_collection_yaml("TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
         
         # ---- Recent Final Episodes ----
         final_episode_shows = find_recent_final_episodes(
@@ -1221,7 +1221,7 @@ def main():
                            {"backdrop": config.get("backdrop_final_episode", {}),
                             "text": config.get("text_final_episode", {})})
         
-        create_collection_yaml("TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
 
         # Track all tvdbIds to exclude from the "returning" category
         all_included_tvdb_ids = set()
@@ -1251,7 +1251,7 @@ def main():
                            {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
                             "text": config.get("text_new_season", config.get("text", {}))})
         
-        create_collection_yaml("TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
 
         # ---- New Season Started ----
         new_season_started_shows = find_new_season_started(
@@ -1272,7 +1272,7 @@ def main():
                            {"backdrop": config.get("backdrop_new_season_started", {}),
                             "text": config.get("text_new_season_started", {})})
         
-        create_collection_yaml("TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
 
         # ---- New Show ----
         create_new_show_overlay_yaml("TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
@@ -1304,7 +1304,7 @@ def main():
                            {"backdrop": config.get("backdrop_upcoming_episode", {}),
                             "text": config.get("text_upcoming_episode", {})})
         
-        create_collection_yaml("TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
         
         # ---- Upcoming Finale Episodes ----
         finale_eps, skipped_finales = find_upcoming_finales(
@@ -1328,7 +1328,7 @@ def main():
                            {"backdrop": config.get("backdrop_upcoming_finale", {}),
                             "text": config.get("text_upcoming_finale", {})})
         
-        create_collection_yaml("TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
 
         # ---- skipped Shows ----
         if skipped_shows:
@@ -1357,7 +1357,7 @@ def main():
                            {"backdrop": config.get("backdrop_ended", {}),
                             "text": config.get("text_ended", {})})
         
-        create_collection_yaml("TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
         
         # ---- Returning Shows ----
         returning_shows = find_returning_shows(sonarr_url, sonarr_api_key, all_included_tvdb_ids)
@@ -1374,7 +1374,7 @@ def main():
                            {"backdrop": config.get("backdrop_returning", {}),
                             "text": config.get("text_returning", {})})
         
-        create_collection_yaml("TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
+        create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
         
         print(f"\nAll YAML files created successfully")
 
