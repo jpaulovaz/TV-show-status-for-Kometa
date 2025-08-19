@@ -12,6 +12,11 @@ os.makedirs("/app/config/kometa/tssk", exist_ok=True)
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "1.8"
+overlay_path = "/app/config/kometa/tssk/"
+collection_path = "/app/config/kometa/"
+puid = int(os.getenv("PUID", "1000"))
+pgid = int(os.getenv("PGID", "1000"))
+
 
 # ANSI color codes
 GREEN = '\033[32m'
@@ -1198,12 +1203,14 @@ def main():
         
         if IS_DOCKER:
 
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
                                {"backdrop": config.get("backdrop_season_finale", {}),
                                 "text": config.get("text_season_finale", {})})
 
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
-        
+            create_collection_yaml(collection_path + "TSSK_TV_SEASON_FINALE_COLLECTION.yml", season_finale_shows, config)
+            os.chown(overlay_path + "TSSK_TV_SEASON_FINALE_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_SEASON_FINALE_COLLECTION.yml", puid, pgid)
+
         else:
             create_overlay_yaml("TSSK_TV_SEASON_FINALE_OVERLAYS.yml", season_finale_shows, 
                                {"backdrop": config.get("backdrop_season_finale", {}),
@@ -1227,12 +1234,15 @@ def main():
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
         
         if IS_DOCKER:
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
                                {"backdrop": config.get("backdrop_final_episode", {}),
                                 "text": config.get("text_final_episode", {})})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
+            create_collection_yaml(collection_path + "TSSK_TV_FINAL_EPISODE_COLLECTION.yml", final_episode_shows, config)
         
+            os.chown(overlay_path + "TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_FINAL_EPISODE_COLLECTION.yml", puid, pgid)
+
         else:
             create_overlay_yaml("TSSK_TV_FINAL_EPISODE_OVERLAYS.yml", final_episode_shows, 
                                {"backdrop": config.get("backdrop_final_episode", {}),
@@ -1268,12 +1278,15 @@ def main():
         # Create YAMLs for new seasons
         
         if IS_DOCKER:
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
                                {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
                                 "text": config.get("text_new_season", config.get("text", {}))})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
-        
+            create_collection_yaml(collection_path + "TSSK_TV_NEW_SEASON_COLLECTION.yml", matched_shows, config)
+            
+            os.chown(overlay_path + "TSSK_TV_NEW_SEASON_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_NEW_SEASON_COLLECTION.yml", puid, pgid)
+
         else:
             create_overlay_yaml("TSSK_TV_NEW_SEASON_OVERLAYS.yml", matched_shows, 
                                {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
@@ -1297,11 +1310,14 @@ def main():
                 print(f"- {show['title']} (Season {show['seasonNumber']}) started on {show['airDate']}")
         
         if IS_DOCKER:
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
                                {"backdrop": config.get("backdrop_new_season_started", {}),
                                 "text": config.get("text_new_season_started", {})})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
+            create_collection_yaml(collection_path + "TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", new_season_started_shows, config)
+
+            os.chown(overlay_path + "TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_NEW_SEASON_STARTED_COLLECTION.yml", puid, pgid)
 
         else:
             create_overlay_yaml("TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml", new_season_started_shows, 
@@ -1313,10 +1329,12 @@ def main():
         # ---- New Show ----
         if IS_DOCKER:
 
-            create_new_show_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
+            create_new_show_overlay_yaml(overlay_path + "TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_new_show"),
                                         "text": get_config_section(config, "text_new_show")}, 
                                        recent_days_new_show)
+
+            os.chown(overlay_path + "TSSK_TV_NEW_SHOW_OVERLAYS.yml", puid, pgid) 
         else:
             
             create_new_show_overlay_yaml("TSSK_TV_NEW_SHOW_OVERLAYS.yml", 
@@ -1346,12 +1364,15 @@ def main():
         
         if IS_DOCKER:
 
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
                                {"backdrop": config.get("backdrop_upcoming_episode", {}),
                                 "text": config.get("text_upcoming_episode", {})})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
-        
+            create_collection_yaml(collection_path + "TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", upcoming_eps, config)
+
+            os.chown(overlay_path + "TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml", puid, pgid)
+           
         else:
             create_overlay_yaml("TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml", upcoming_eps, 
                                {"backdrop": config.get("backdrop_upcoming_episode", {}),
@@ -1379,12 +1400,14 @@ def main():
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
         
         if IS_DOCKER:
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
                                {"backdrop": config.get("backdrop_upcoming_finale", {}),
                                 "text": config.get("text_upcoming_finale", {})})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
-        
+            create_collection_yaml(collection_path + "TSSK_TV_UPCOMING_FINALE_COLLECTION.yml", finale_eps, config)
+            os.chown(overlay_path, puid, pgid)
+            os.chown(collection_path, puid, pgid)
+
         else:
             create_overlay_yaml("TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml", finale_eps, 
                                {"backdrop": config.get("backdrop_upcoming_finale", {}),
@@ -1415,13 +1438,15 @@ def main():
 #            for show in ended_shows:
 #                print(f"- {show['title']}")
         
-        if IS_DOCKER
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
+        if IS_DOCKER:
+            create_overlay_yaml(overlay_path + "TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
                                {"backdrop": config.get("backdrop_ended", {}),
                                 "text": config.get("text_ended", {})})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
-        
+            create_collection_yaml(collection_path + "TSSK_TV_ENDED_COLLECTION.yml", ended_shows, config)
+            os.chown(overlay_path + "TSSK_TV_ENDED_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_ENDED_COLLECTION.yml", puid, pgid)
+
         else:
             create_overlay_yaml("TSSK_TV_ENDED_OVERLAYS.yml", ended_shows, 
                                {"backdrop": config.get("backdrop_ended", {}),
@@ -1441,12 +1466,14 @@ def main():
 #                print(f"- {show['title']}")
         
         if IS_DOCKER:
-            create_overlay_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
+            create_overlay_yaml(overlay_path + "TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
                                {"backdrop": config.get("backdrop_returning", {}),
                                 "text": config.get("text_returning", {})})
         
-            create_collection_yaml("/app/config/kometa/tssk/TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
-        
+            create_collection_yaml(collection_path + "TSSK_TV_RETURNING_COLLECTION.yml", returning_shows, config)
+            os.chown(overlay_path + "TSSK_TV_RETURNING_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_RETURNING_COLLECTION.yml", puid, pgid)
+
         else:
             create_overlay_yaml("TSSK_TV_RETURNING_OVERLAYS.yml", returning_shows, 
                                {"backdrop": config.get("backdrop_returning", {}),
