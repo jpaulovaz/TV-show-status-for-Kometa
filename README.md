@@ -1,8 +1,8 @@
 ## AJUSTEI O SCRIPT PARA ACEITAR CARACTERES PT-BR;
-## AJUSTEI PARA NÃO CRIAR OVERLAY COMO BACKDROP, POIS USO UMA IMAGEM DE FUNDO PRÓPRIA;
 ## CORRIGI O FATO DO SCRIPT NÃO SALVAR OS ARQUIVOS NA PASTA DO KOMETA;
-## AINDA VOU EFETUAR ALGUNS AJUSTES
-## CONFIGURADO PARA USO PESSOAL E PODE NÃO SE ADEQUAR A SUA NECESSIDADE.
+## AINDA VOU EFETUAR ALGUNS AJUSTES;
+## CONFIGURADO PARA USO PESSOAL E PODE NÃO SE ADEQUAR A SUA NECESSIDADE;
+## AINDA EM PROCESSO DE TRADUÇÃO.
 
 
 # 📺 TV Show Status for Kometa
@@ -94,7 +94,7 @@ version: "3.8"
 
 services:
   tssk:
-    image: timothe/tssk:latest
+    image: joaopaulofvaz/tssk:latest
     container_name: tssk
     environment:
       - CRON=0 2 * * * # every day at 2am
@@ -126,23 +126,23 @@ In your Kometa config, include the following lines under your `TV Shows` library
 ```yaml
 TV Shows:
   overlay_files:
-    - file: /config/tssk/TSSK_TV_NEW_SEASON_OVERLAYS.yml
-    - file: /config/tssk/TSSK_TV_UPCOMING_EPISODE_OVERLAYS.yml
-    - file: /config/tssk/TSSK_TV_UPCOMING_FINALE_OVERLAYS.yml
-    - file: /config/tssk/TSSK_TV_SEASON_FINALE_OVERLAYS.yml
-    - file: /config/tssk/TSSK_TV_FINAL_EPISODE_OVERLAYS.yml
-    - file: /config/tssk/TSSK_TV_ENDED_OVERLAYS.yml
-    - file: /config/tssk/TSSK_TV_RETURNING_OVERLAYS.yml
-    - file: P:/TOOLS/Plex Meta Manager/config/TSSK/TSSK_TV_NEW_SEASON_STARTED_OVERLAYS.yml
-    - file: P:/TOOLS/Plex Meta Manager/config/TSSK/TSSK_TV_NEW_SHOW_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_FINALIZADOS_OVERLAYS.yml
+    - file: /config/tssk/TSSK_TV_RETORNANDO_OVERLAYS.yml
+    - file: /config/TSSK/TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml
+    - file: /config/TSSK/TSSK_TV_NOVO_SERIADO_OVERLAYS.yml
   collection_files:
-    - file: /config/tssk/TSSK_TV_NEW_SEASON_COLLECTION.yml
-    - file: /config/tssk/TSSK_TV_UPCOMING_EPISODE_COLLECTION.yml
-    - file: /config/tssk/TSSK_TV_UPCOMING_FINALE_COLLECTION.yml
-    - file: /config/tssk/TSSK_TV_SEASON_FINALE_COLLECTION.yml
-    - file: /config/tssk/TSSK_TV_FINAL_EPISODE_COLLECTION.yml
-    - file: /config/tssk/TSSK_TV_ENDED_COLLECTION.yml
-    - file: /config/tssk/TSSK_TV_RETURNING_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_FIM_TEMPORADA_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_EPISODIO_FINAL_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_FINALIZADOS_COLLECTION.yml
+    - file: /config/tssk/TSSK_TV_RETORNANDO_COLLECTION.yml
 ```
 
 > [!TIP]

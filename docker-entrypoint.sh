@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Cria a pasta /app/config se não existir
-mkdir -p /app/config
+mkdir -p /app/config/kometa/tssk
 
 # Copia todo o conteúdo de /app/files para /app/config (sobrescreve arquivos existentes)
 cp -r /app/files/* /app/config/
