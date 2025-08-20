@@ -20,11 +20,11 @@ backdrop_new_season:
   enable: true
   back_color: "#228B22"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 text_new_season:
   date_format: "ddd dd/mm"
@@ -33,8 +33,8 @@ text_new_season:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
  #font: Ajuste com a fonte dessejada.
 
@@ -54,11 +54,11 @@ backdrop_new_season_started:
   enable: true
   back_color: "#EB3233"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_new_season_started:
@@ -66,8 +66,8 @@ text_new_season_started:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
   #font: Ajuste com a fonte dessejada.
   
@@ -87,11 +87,11 @@ backdrop_new_show:
   enable: true
   back_color: "#EB3233"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_new_show:
@@ -99,8 +99,8 @@ text_new_show:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
 #font: Ajuste com a fonte dessejada.
 
@@ -120,11 +120,11 @@ backdrop_upcoming_episode:
   enable: true
   back_color: "#006580"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
   
 
 
@@ -135,13 +135,13 @@ text_upcoming_episode:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
   #font: Ajuste com a fonte dessejada.
   
 ################################################################################
-##########                      EPISÓDIO FINAL:                       ##########
+##########                     PROXIMO EPISÓDIO FINAL:                       ##########
 ################################################################################
 
 future_days_upcoming_finale: 31
@@ -156,22 +156,22 @@ backdrop_upcoming_finale:
   enable: true
   back_color: "#9932CC"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_upcoming_finale:
   date_format: "ddd dd/mm"      # e.g., "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   capitalize_dates: true
-  use_text: "EPISÓDIO FINAL EM"
+  use_text: "EPISÓDIO FINAL"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
   #font: Ajuste com a fonte dessejada.
 
@@ -189,11 +189,11 @@ backdrop_ended:
   enable: true
   back_color: "#000000"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_ended:
@@ -202,7 +202,7 @@ text_ended:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 50
-  font_size: 70
+  font_size: 65
   font_color: "#00ff3d"
   #font: Ajuste com a fonte dessejada.
 
@@ -220,11 +220,11 @@ backdrop_returning:
   enable: true
   back_color: "#000000"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_returning:
@@ -233,7 +233,7 @@ text_returning:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 50
-  font_size: 70
+  font_size: 65
   font_color: "#ff9000"
   #font: Ajuste com a fonte dessejada.
 
@@ -253,11 +253,11 @@ backdrop_season_finale:
   enable: true
   back_color: "#ffb902"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_season_finale:
@@ -265,8 +265,8 @@ text_season_finale:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#000000"
   #font: Ajuste com a fonte dessejada.
 
@@ -286,11 +286,11 @@ backdrop_final_episode:
   enable: true
   back_color: "#ffb902"
   back_height: 90
-  back_width: 950
+  back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 20
+  vertical_offset: 0
 
 
 text_final_episode:
@@ -298,7 +298,7 @@ text_final_episode:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 35
-  font_size: 70
+  vertical_offset: 15
+  font_size: 65
   font_color: "#000000"
  #font: Ajuste com a fonte dessejada.
