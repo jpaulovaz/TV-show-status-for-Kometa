@@ -1419,7 +1419,7 @@ def main():
                                 "text": config.get("text_upcoming_finale", {})})
         
             create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
-            os.chown(overlay_path + "TSSK_TV_PROXIMOS_FINAIS_OVERLAYS", puid, pgid)
+            os.chown(overlay_path + "TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
             os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION", puid, pgid)
 
         else:
