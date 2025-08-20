@@ -18,23 +18,25 @@ collection_new_season:
 
 backdrop_new_season:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#228B22"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 text_new_season:
   date_format: "ddd dd/mm"
   capitalize_dates: true
-  use_text: "Nova Temporada em"
+  use_text: "NOVA TEMPORADA EM"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
-  #font: Ajuste com a fonte dessejada.
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
+ #font: Ajuste com a fonte dessejada.
 
 ################################################################################
 ##########                    NOVA TEMPORADA INICIADA:                ##########
@@ -50,22 +52,24 @@ collection_new_season_started:
 
 backdrop_new_season_started:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#EB3233"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_new_season_started:
-  use_text: "Nova Temporada Iniciada"
+  use_text: "NOVA TEMPORADA INICIADA"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
-  #font: Ajuste com a fonte dessejada.
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
+  #font: Ajuste com a fonte dessejada.
   
 ################################################################################
 ##########                         NOVO SERIADO:                      ##########
@@ -81,22 +85,24 @@ collection_new_show:
 
 backdrop_new_show:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#EB3233"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_new_show:
-  use_text: "Adicionado Recentemente"
+  use_text: "ADICIONADO RECENTEMENTE"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
-  #font: Ajuste com a fonte dessejada.
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
+#font: Ajuste com a fonte dessejada.
 
 ################################################################################
 ##########                     PRÓXIMO EPISÓDIO:                      ##########
@@ -112,28 +118,30 @@ collection_upcoming_episode:
   
 backdrop_upcoming_episode:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#006580"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
   
 
 
 text_upcoming_episode:
   date_format: "ddd dd/mm"
   capitalize_dates: true
-  use_text: "Próximo Episódio"
+  use_text: "PRÓXIMO EPISÓDIO"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
-  #font: Ajuste com a fonte dessejada.
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
+  #font: Ajuste com a fonte dessejada.
   
 ################################################################################
-##########                      EPISÓDIO FINAL:                       ##########
+##########                     PROXIMO EPISÓDIO FINAL:                       ##########
 ################################################################################
 
 future_days_upcoming_finale: 31
@@ -146,24 +154,26 @@ collection_upcoming_finale:
   
 backdrop_upcoming_finale:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#9932CC"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_upcoming_finale:
   date_format: "ddd dd/mm"      # e.g., "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   capitalize_dates: true
-  use_text: "Episódio final"
+  use_text: "EPISÓDIO FINAL"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
-  #font: Ajuste com a fonte dessejada.
+  vertical_offset: 15
+  font_size: 65
   font_color: "#FFFFFF"
+  #font: Ajuste com a fonte dessejada.
 
 ################################################################################
 ##########                           FINALIZADO:                      ##########
@@ -177,11 +187,13 @@ collection_ended:
 
 backdrop_ended:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#000000"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_ended:
@@ -189,10 +201,10 @@ text_ended:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
+  vertical_offset: 50
+  font_size: 65
+  font_color: "#00ff3d"
   #font: Ajuste com a fonte dessejada.
-  font_color: "#FFFFFF"
 
 ################################################################################
 ##########                         RETORNANDO:                         ##########
@@ -206,11 +218,13 @@ collection_returning:
 
 backdrop_returning:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#000000"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_returning:
@@ -218,10 +232,10 @@ text_returning:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
+  vertical_offset: 50
+  font_size: 65
+  font_color: "#ff9000"
   #font: Ajuste com a fonte dessejada.
-  font_color: "#FFFFFF"
 
 ################################################################################
 ##########                       FIANAL DE TEMPORADA:                 ##########
@@ -237,22 +251,24 @@ collection_season_finale:
 
 backdrop_season_finale:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#ffb902"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_season_finale:
-  use_text: "Final de Temporada"
+  use_text: "FINAL DE TEMPORADA"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#000000"
   #font: Ajuste com a fonte dessejada.
-  font_color: "#FFFFFF"
 
 ################################################################################
 ##########                       EPISÓDIO FINAL:                      ##########
@@ -268,19 +284,21 @@ collection_final_episode:
 
 backdrop_final_episode:
   enable: true
-  file: ./config/tssk/overlays/recently_added_vazio.png
+  back_color: "#ffb902"
+  back_height: 90
+  back_width: 1000
   horizontal_align: center
-  vertical_align: bottom
   horizontal_offset: 0
-  vertical_offset: 15
+  vertical_align: bottom
+  vertical_offset: 0
 
 
 text_final_episode:
-  use_text: "Episódio Final"
+  use_text: "EPISÓDIO FINAL"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 55
-  font_size: 60
-  #font: Ajuste com a fonte dessejada.
-  font_color: "#FFFFFF"
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#000000"
+ #font: Ajuste com a fonte dessejada.
