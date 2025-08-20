@@ -166,7 +166,7 @@ backdrop_upcoming_finale:
 text_upcoming_finale:
   date_format: "ddd dd/mm"      # e.g., "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   capitalize_dates: true
-  use_text: "EPISÓDIO FINAL"
+  use_text: "EPISÓDIO FINAL EM"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom

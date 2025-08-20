@@ -865,7 +865,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
     all_tvdb_ids = set()
     
     # Check if this is a category that doesn't need dates
-    no_date_needed = "FIM_TEMPORADA" in output_file or "NOVA_TEMPORADA_INICIADA" in output_file
+    no_date_needed = "FIM_TEMPORADA" in output_file or "EPISODIO_FINAL" in output_file or "NOVA_TEMPORADA_INICIADA" in output_file
     
     for s in shows:
         if s.get("tvdbId"):
