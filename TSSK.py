@@ -1420,7 +1420,7 @@ def main():
         
             create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
             os.chown(overlay_path + "TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", puid, pgid)
 
         else:
             create_overlay_yaml("TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
