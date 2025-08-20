@@ -865,7 +865,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
     all_tvdb_ids = set()
     
     # Check if this is a category that doesn't need dates
-    no_date_needed = "SEASON_FINALE" in output_file or "FINAL_EPISODE" in output_file or "NEW_SEASON_STARTED" in output_file
+    no_date_needed = "FIM_TEMPORADA" in output_file or "EPISODIO_FINAL" in output_file or "NOVA_TEMPORADA_INICIADA" in output_file
     
     for s in shows:
         if s.get("tvdbId"):
@@ -924,13 +924,13 @@ def create_overlay_yaml(output_file, shows, config_sections):
             tvdb_ids_str = ", ".join(str(i) for i in sorted(all_tvdb_ids) if i)
             
             # Extract category name from filename
-        #    if "NEW_SEASON_STARTED" in output_file:
+        #    if "NOVA_TEMPORADA_INICIADA" in output_file:
         #        block_key = "TSSK_new_season_started"
-        #    elif "SEASON_FINALE" in output_file:
+        #    elif "FIM_TEMPORADA" in output_file:
         #        block_key = "TSSK_season_finale"
-        #    elif "FINAL_EPISODE" in output_file:
+        #    elif "EPISODIO_FINAL" in output_file:
         #        block_key = "TSSK_final_episode"
-        #    elif "ENDED" in output_file:
+        #    elif "FINALIZADOS" in output_file:
         #        block_key = "TSSK_ended"
         #    elif "RETURNING" in output_file:
         #        block_key = "TSSK_returning"
@@ -1022,25 +1022,25 @@ def create_collection_yaml(output_file, shows, config):
     collection_config = {}
     collection_name = ""
     
-    if "SEASON_FINALE" in output_file:
+    if "FIM_TEMPORADA" in output_file:
         config_key = "collection_season_finale"
         summary = f"Shows with a season finale that aired within the past {config.get('recent_days_season_finale', 21)} days"
-    elif "FINAL_EPISODE" in output_file:
+    elif "EPISODIO_FINAL" in output_file:
         config_key = "collection_final_episode"
         summary = f"Shows with a final episode that aired within the past {config.get('recent_days_final_episode', 21)} days"
-    elif "NEW_SEASON_STARTED" in output_file:
+    elif "NOVA_TEMPORADA_INICIADA" in output_file:
         config_key = "collection_new_season_started"
         summary = f"Shows with a new season that started within the past {config.get('recent_days_new_season_started', 14)} days"
-    elif "NEW_SEASON" in output_file:
+    elif "NOVA_TEMPORADA" in output_file:
         config_key = "collection_new_season"
         summary = f"Shows with a new season starting within {config.get('future_days_new_season', 31)} days"
-    elif "UPCOMING_EPISODE" in output_file:
+    elif "PROXIMOS_EPISODIOS" in output_file:
         config_key = "collection_upcoming_episode"
         summary = f"Shows with an upcoming episode within {config.get('future_days_upcoming_episode', 31)} days"
-    elif "UPCOMING_FINALE" in output_file:
+    elif "PROXIMOS_FINAIS" in output_file:
         config_key = "collection_upcoming_finale"
         summary = f"Shows with a season finale within {config.get('future_days_upcoming_finale', 31)} days"
-    elif "ENDED" in output_file:
+    elif "FINALIZADOS" in output_file:
         config_key = "collection_ended"
         summary = "Shows that have completed their run"
     elif "RETURNING" in output_file:
