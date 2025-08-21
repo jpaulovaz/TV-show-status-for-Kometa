@@ -7,16 +7,21 @@ if sys.version_info >= (3, 7):
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 import os
-os.makedirs("/app/config/kometa/tssk", exist_ok=True)
+import functools
+print = functools.partial(print, flush=True)
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
-VERSION = "1.8"
-overlay_path = "/app/config/kometa/tssk/"
-collection_path = "/app/config/kometa/tssk/"
-puid = int(os.getenv("PUID", "1000"))
-pgid = int(os.getenv("PGID", "1000"))
+VERSION = "1.1.0"
 
+
+
+if IS_DOCKER:
+    os.makedirs("/app/config/kometa/tssk", exist_ok=True)
+    puid = int(os.getenv("PUID", "1000"))
+    pgid = int(os.getenv("PGID", "1000"))
+    overlay_path = "/app/config/kometa/tssk/"
+    collection_path = "/app/config/kometa/tssk/"
 
 # ANSI color codes
 GREEN = '\033[32m'
@@ -31,7 +36,7 @@ def check_for_updates():
     
     try:
         response = requests.get(
-            "https://api.github.com/repos/netplexflix/TV-show-status-for-Kometa/releases/latest",
+            "https://api.github.com/repos/jpaulovaz/TV-show-status-for-Kometa/releases/latest",
             timeout=10
         )
         response.raise_for_status()
