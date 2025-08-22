@@ -20,10 +20,9 @@ if IS_DOCKER:
     pgid = int(os.getenv("PGID", "1000"))
     overlay_path = "/app/config/kometa/tssk/"
     collection_path = "/app/config/kometa/tssk/"
-
-print(f"DOCKER {IS_DOCKER}")
-print(f"puid {puid}")
-print(f"pgid {pgid}")
+    print(f"DOCKER {IS_DOCKER}")
+    print(f"puid {puid}")
+    print(f"pgid {pgid}")
 
 
 # ANSI color codes
