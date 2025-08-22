@@ -3,9 +3,10 @@ FROM python:3.11-slim
 
 # Disable .pyc files and enable real-time logging
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    CRON="0 2 * * *"
-# default: run at 2AM daily
+    PYTHONUNBUFFERED=1
+
+# Define a variável CRON para o agendamento
+ARG CRON="0 2 * * *"
 
 # Set working directory
 WORKDIR /app
