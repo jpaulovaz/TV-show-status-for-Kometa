@@ -1,3 +1,5 @@
+Este é um fork de https://github.com/netplexflix/TV-show-status-for-Kometa, todo crédito deve ser direcionado ao autor original.
+
 # Diferenças do Script Original
 * Script ajustado para caracteres pt-BR;
 * Corrigido o fato do script não salvar os arquivos na pasta do Kometa quando executando em Docker;
