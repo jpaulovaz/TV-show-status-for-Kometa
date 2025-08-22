@@ -196,12 +196,12 @@ def find_new_season_shows(sonarr_url, api_key, future_days_new_season, utc_offse
             and air_date_next <= cutoff_date
         ):
             tvdb_id = series.get('tvdbId')
-            air_date_str_yyyy_mm_dd = air_date_next.date().isoformat()
+            air_date_str_dd_mm_yyyy = air_date_next.date().strftime("%d/%m/%Y")
 
             show_dict = {
                 'title': series['title'],
                 'seasonNumber': next_future['seasonNumber'],
-                'airDate': air_date_str_yyyy_mm_dd,
+                'airDate': air_date_str_dd_mm_yyyy,
                 'tvdbId': tvdb_id
             }
             
@@ -227,12 +227,12 @@ def find_new_season_shows(sonarr_url, api_key, future_days_new_season, utc_offse
             and air_date_next <= cutoff_date
         ):
             tvdb_id = series.get('tvdbId')
-            air_date_str_yyyy_mm_dd = air_date_next.date().isoformat()
+            air_date_str_dd_mm_yyyy = air_date_next.date().strftime("%d/%m/%Y")
 
             show_dict = {
                 'title': series['title'],
                 'seasonNumber': next_future['seasonNumber'],
-                'airDate': air_date_str_yyyy_mm_dd,
+                'airDate': air_date_str_dd_mm_yyyy,
                 'tvdbId': tvdb_id,
                 'reason': "New show (Season 1)"  # Adicione motivo para pular
             }
@@ -305,13 +305,13 @@ def find_upcoming_regular_episodes(sonarr_url, api_key, future_days_upcoming_epi
             continue
         
         tvdb_id = series.get('tvdbId')
-        air_date_str_yyyy_mm_dd = air_date.date().isoformat()
+        air_date_str_dd_mm_yyyy = air_date.date().strftime("%d/%m/%Y")
 
         show_dict = {
             'title': series['title'],
             'seasonNumber': season_num,
             'episodeNumber': episode_num,
-            'airDate': air_date_str_yyyy_mm_dd,
+            'airDate': air_date_str_dd_mm_yyyy,
             'tvdbId': tvdb_id
         }
         
@@ -395,13 +395,13 @@ def find_upcoming_finales(sonarr_url, api_key, future_days_upcoming_finale, utc_
             continue
         
         tvdb_id = series.get('tvdbId')
-        air_date_str_yyyy_mm_dd = air_date.date().isoformat()
+        air_date_str_dd_mm_yyyy = air_date.date().strftime("%d/%m/%Y")
 
         show_dict = {
             'title': series['title'],
             'seasonNumber': season_num,
             'episodeNumber': episode_num,
-            'airDate': air_date_str_yyyy_mm_dd,
+            'airDate': air_date_str_dd_mm_yyyy,
             'tvdbId': tvdb_id
         }
         
@@ -569,15 +569,15 @@ def find_recent_season_finales(sonarr_url, api_key, recent_days_season_finale, u
                 
                 # Se for um episódio futuro que já foi baixado, use a data de hoje em vez
                 if air_date > now_local and finale_episode.get('hasFile', False):
-                    air_date_str_yyyy_mm_dd = now_local.date().isoformat()
+                    air_date_str_dd_mm_yyyy = now_local.date().strftime("%d/%m/%Y")
                 else:
-                    air_date_str_yyyy_mm_dd = air_date.date().isoformat()
+                    air_date_str_dd_mm_yyyy = air_date.date().strftime("%d/%m/%Y")
                 
                 show_dict = {
                     'title': series['title'],
                     'seasonNumber': season_num,
                     'episodeNumber': max_episode_num,
-                    'airDate': air_date_str_yyyy_mm_dd,
+                    'airDate': air_date_str_dd_mm_yyyy,
                     'tvdbId': tvdb_id
                 }
                 
@@ -687,15 +687,15 @@ def find_recent_final_episodes(sonarr_url, api_key, recent_days_final_episode, u
             
             # Se for um episódio futuro que já foi baixado, use a data de hoje em vez
             if air_date > now_local and final_episode.get('hasFile', False):
-                air_date_str_yyyy_mm_dd = now_local.date().isoformat()
+                air_date_str_dd_mm_yyyy = now_local.date().strftime("%d/%m/%Y")
             else:
-                air_date_str_yyyy_mm_dd = air_date.date().isoformat()
+                air_date_str_dd_mm_yyyy = air_date.date().strftime("%d/%m/%Y")
             
             show_dict = {
                 'title': series['title'],
                 'seasonNumber': max_season,
                 'episodeNumber': max_episode_num,
-                'airDate': air_date_str_yyyy_mm_dd,
+                'airDate': air_date_str_dd_mm_yyyy,
                 'tvdbId': tvdb_id
             }
             
@@ -777,13 +777,13 @@ def find_new_season_started(sonarr_url, api_key, recent_days_new_season_started,
         # Inclua se ele foi ao ar dentro do período recente (assumindo que o download aconteceu na data do ar)
         if air_date >= cutoff_date and air_date <= now_local:
             tvdb_id = series.get('tvdbId')
-            air_date_str_yyyy_mm_dd = air_date.date().isoformat()
+            air_date_str_dd_mm_yyyy = air_date.date().strftime("%d/%m/%Y")
             
             show_dict = {
                 'title': series['title'],
                 'seasonNumber': max_season_with_downloads,
                 'episodeNumber': first_episode.get('episodeNumber'),
-                'airDate': air_date_str_yyyy_mm_dd,
+                'airDate': air_date_str_dd_mm_yyyy,
                 'tvdbId': tvdb_id
             }
             
@@ -791,8 +791,8 @@ def find_new_season_started(sonarr_url, api_key, recent_days_new_season_started,
     
     return matched_shows
 
-def format_date(yyyy_mm_dd, date_format, capitalize=False):
-    dt_obj = datetime.strptime(yyyy_mm_dd, "%Y-%m-%d")
+def format_date(dd_mm_yyyy, date_format, capitalize=False):
+    dt_obj = datetime.strptime(dd_mm_yyyy, "%d/%m/%Y")
     
     format_mapping = {
         'mmm': '%b',    # Nome do mês abreviado
@@ -847,7 +847,7 @@ def format_date(yyyy_mm_dd, date_format, capitalize=False):
         return result
     except ValueError as e:
         print(f"{RED}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
-        return yyyy_mm_dd
+        return dd_mm_yyyy
     
     try:
         result = dt_obj.strftime(strftime_format)
@@ -856,7 +856,7 @@ def format_date(yyyy_mm_dd, date_format, capitalize=False):
         return result
     except ValueError as e:
         print(f"{RED}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
-        return yyyy_mm_dd  # Return original format as fallback
+        return dd_mm_yyyy  # Return original format as fallback
 
 def create_overlay_yaml(output_file, shows, config_sections):
     import yaml
@@ -906,7 +906,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
     
     if enable_text and all_tvdb_ids:
         date_format = text_config.pop("date_format", "yyyy-mm-dd")
-        use_text = text_config.pop("use_text", "New Season")
+        use_text = text_config.pop("use_text", "NOVA TEMPORADA")
         capitalize_dates = text_config.pop("capitalize_dates", True)
         
         # For categories that need dates and shows with air dates, create date-specific overlays
@@ -969,6 +969,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
+#################################PLEX BASED CONFIG#################################
         # ---- Episode Added ----
 def create_new_episode_added_overlay_yaml(output_file, config_sections, recent_days):
     "Cria Overlay Para episódios adicionados recentemente, independente da exibição."
@@ -1099,7 +1100,7 @@ def create_new_season_added_overlay_yaml(output_file, config_sections, recent_da
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "EPISÓDIO NOVO")
+        use_text = text_config.pop("use_text", "TEMPORADA ATUALIZADA")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1150,7 +1151,7 @@ def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "ADICIONADO RECENTEMENTE")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1202,7 +1203,7 @@ def create_episode_on_season_overlay_yaml(output_file, config_sections, recent_d
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "NOVOS EPISÓDIOS")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1253,7 +1254,7 @@ def create_new_episode_on_season_overlay_yaml(output_file, config_sections, rece
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "EPISÓDIO NOVO")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1304,7 +1305,7 @@ def create_season_added_overlay_yaml(output_file, config_sections, recent_days):
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "ADICIONADA RECENTEMENTE")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1356,7 +1357,7 @@ def create_new_season_released_overlay_yaml(output_file, config_sections, recent
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "NOVA TEMPORADA")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1408,7 +1409,7 @@ def create_episode_added_overlay_yaml(output_file, config_sections, recent_days)
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "ADICIONADO RECENTEMENTE")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1459,7 +1460,7 @@ def create_new_episode_released_overlay_yaml(output_file, config_sections, recen
     enable_text = text_config.pop("enable", True)
     
     if enable_text:
-        use_text = text_config.pop("use_text", "New Show")
+        use_text = text_config.pop("use_text", "EPISÓDIO NOVO")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
@@ -1479,6 +1480,8 @@ def create_new_episode_released_overlay_yaml(output_file, config_sections, recen
     
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
+##############################END PLEX BASED CONFIG##############################
+
 
 def create_collection_yaml(output_file, shows, config):
     import yaml
@@ -1498,25 +1501,25 @@ def create_collection_yaml(output_file, shows, config):
     
     if "FIM_TEMPORADA" in output_file:
         config_key = "collection_season_finale"
-        summary = f"Shows com um final de temporada que foi ao ar nós últimos {config.get('recent_days_season_finale', 21)} dias"
+        summary = f"Seriados com um final de temporada que foi ao ar nós últimos {config.get('recent_days_season_finale', 21)} dias"
     elif "EPISODIO_FINAL" in output_file:
         config_key = "collection_final_episode"
-        summary = f"Shows com um episódio final que foi ao ar nós últimos {config.get('recent_days_final_episode', 21)} dias"
+        summary = f"Seriados com um episódio final que foi ao ar nós últimos {config.get('recent_days_final_episode', 21)} dias"
     elif "NOVA_TEMPORADA_INICIADA" in output_file:
         config_key = "collection_new_season_started"
-        summary = f"Shows com uma nova temporada que começou no passado {config.get('recent_days_new_season_started', 14)} days"
+        summary = f"Seriados com uma nova temporada que começou no passado {config.get('recent_days_new_season_started', 14)} days"
     elif "NOVA_TEMPORADA" in output_file:
         config_key = "collection_new_season"
-        summary = f"Shows com uma nova temporada começando dentro {config.get('future_days_new_season', 31)} days"
+        summary = f"Seriados com uma nova temporada começando dentro {config.get('future_days_new_season', 31)} days"
     elif "PROXIMOS_EPISODIOS" in output_file:
         config_key = "collection_upcoming_episode"
-        summary = f"Shows com um próximo episódio dentro {config.get('future_days_upcoming_episode', 31)} days"
+        summary = f"Seriados com um próximo episódio dentro {config.get('future_days_upcoming_episode', 31)} days"
     elif "PROXIMOS_FINAIS" in output_file:
         config_key = "collection_upcoming_finale"
-        summary = f"Shows com um final de temporada dentro de {config.get('future_days_upcoming_finale', 31)} days"
+        summary = f"Seriados com um final de temporada dentro de {config.get('future_days_upcoming_finale', 31)} days"
     elif "FINALIZADOS" in output_file:
         config_key = "collection_ended"
-        summary = "Programas que completaram sua transmissão"
+        summary = "Seriados que já foram Finalizados."
     elif "RETURNING" in output_file:
         config_key = "collection_returning"
         summary = "Retornando programas sem os próximos episódios dentro dos prazos escolhidos"
@@ -1704,9 +1707,9 @@ def main():
                 all_excluded_tvdb_ids.add(show['tvdbId'])
         
         if season_finale_shows:
-            print(f"{GREEN}Shows com um final de temporada que foi ao ar nos últimos {recent_days_season_finale} dias:{RESET}")
+            print(f"{GREEN}Seriados com um final de temporada que foi ao ar nos últimos {recent_days_season_finale} dias:{RESET}")
             for show in season_finale_shows:
-                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
+                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
         if IS_DOCKER:
 
@@ -1736,9 +1739,9 @@ def main():
                 all_excluded_tvdb_ids.add(show['tvdbId'])
         
         if final_episode_shows:
-            print(f"\n{GREEN}Shows com um episódio final que foi ao ar nos últimos {recent_days_final_episode} dias:{RESET}")
+            print(f"\n{GREEN}Seriados com um episódio final que foi ao ar nos últimos {recent_days_final_episode} dias:{RESET}")
             for show in final_episode_shows:
-                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) aired on {show['airDate']}")
+                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", final_episode_shows, 
@@ -1776,9 +1779,9 @@ def main():
                 all_included_tvdb_ids.add(show['tvdbId'])
         
         if matched_shows:
-            print(f"\n{GREEN}Shows com uma nova temporada começando dentro de  {future_days_new_season} dias:{RESET}")
+            print(f"\n{GREEN}Seriados com uma nova temporada começando dentro de  {future_days_new_season} dias:{RESET}")
             for show in matched_shows:
-                print(f"- {show['title']} (Season {show['seasonNumber']}) airs on {show['airDate']}")
+                print(f"- {show['title']} (Temporada {show['seasonNumber']}) vai ao ar em {show['airDate']}")
         else:
             print(f"\n{RED}Nenhum show com novas estações começando dentro de {future_days_new_season} dias.{RESET}")
         
@@ -1812,9 +1815,9 @@ def main():
                 all_excluded_tvdb_ids.add(show['tvdbId'])
         
         if new_season_started_shows:
-            print(f"\n{GREEN}Shows com uma nova temporada que começou no passado {recent_days_new_season_started} dias:{RESET}")
+            print(f"\n{GREEN}Seriados com uma nova temporada que começou no passado {recent_days_new_season_started} dias:{RESET}")
             for show in new_season_started_shows:
-                print(f"- {show['title']} (Season {show['seasonNumber']}) started on {show['airDate']}")
+                print(f"- {show['title']} (Temporada {show['seasonNumber']}) started on {show['airDate']}")
         
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", new_season_started_shows, 
@@ -2028,9 +2031,9 @@ def main():
                 all_included_tvdb_ids.add(show['tvdbId'])
         
         if upcoming_eps:
-            print(f"\n{GREEN}Programas com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
+            print(f"\n{GREEN}Seriados com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
             for show in upcoming_eps:
-                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
+                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
         
         if IS_DOCKER:
 
@@ -2065,9 +2068,9 @@ def main():
                 all_included_tvdb_ids.add(show['tvdbId'])
         
         if finale_eps:
-            print(f"\n{GREEN}Shows com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
+            print(f"\n{GREEN}Seriados com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
             for show in finale_eps:
-                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) airs on {show['airDate']}")
+                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
         
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
@@ -2087,9 +2090,9 @@ def main():
         
         # ---- skipped Shows ----
         if skipped_shows:
-            print(f"\n{ORANGE}Shows Shows (não monitorados ou novos shows):{RESET}")
+            print(f"\n{ORANGE}Seriados (não monitorados ou novos shows):{RESET}")
             for show in skipped_shows:
-                print(f"- {show['title']} (Season {show['seasonNumber']}) airs on {show['airDate']}")        
+                print(f"- {show['title']} (Temporada {show['seasonNumber']}) vai ao ar em {show['airDate']}")        
         # ---- Ended Shows ----
         # The find_ended_shows function doesn't have a skip_unmonitored parameter
         # as it's based on show status rather than monitoring status

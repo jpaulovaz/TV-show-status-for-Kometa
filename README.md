@@ -235,51 +235,40 @@ Renomeie `config.example.yml` to `config.yml` e edite o que desejar:
 >Divisores podem ser `/`, `-` ou um espaço
 
 ---
-## 🚀 Usage - Running the Script
+## 🚀 Uso -executando o script
 
-If you're using the **Docker setup**, the script will run automatically according to the schedule defined by the `CRON` variable in your `docker-compose.yml`.  
-You can inspect the container logs to see output and monitor activity:
+Se você estiver usando a configuração **Docker**, o script será executado automaticamente de acordo com o cronograma definido pela variável `cron` no seu `docker-compose.yml`. Você pode inspecionar os logs do contêiner para ver a saída e monitorar a atividade:
 
 ```sh
 docker logs -f tssk
 ```
 
-If you're using the **manual install**, follow the instructions below to run the script manually.
+Se você estiver **usando a instalação**, siga as instruções abaixo para executar o script manualmente.
 
-Open a Terminal in your script directory and launch the script with:
+Abra um terminal no seu diretório de script e inicie o script com:
 ```sh
 python TSSK.py
 ```
-The script will list matched and/or skipped shows and create the .yml files. <br/>
-The previous configuration will be erased so Kometa will automatically remove overlays for shows that no longer match the criteria.
+O script listará programas correspondentes e/ou ignorados e criará os arquivos .yml. <br/>
+A configuração anterior será apagada para que o Kometa remova automaticamente sobreposições para programas que não correspondem mais aos critérios.
 
 > [!TIP]
-> Windows users can create a batch file to quickly launch the script.<br/>
-> Type `"[path to your python.exe]" "[path to the script]" -r pause"` into a text editor
+> Os usuários do Windows podem criar um `batch file` para iniciar rapidamente o script.<br/>
+> Digite `"[path to your python.exe]" "[path to the script]" -r pause"` no editor de text
 >
-> For example:
+> Exemplo:
 > ```
 >"C:\Users\User1\AppData\Local\Programs\Python\Python311\python.exe" "P:\TSSK\TSSK.py" -r
 >pause
 > ```
-> Save as a .bat file. You can now double click this batch file to directly launch the script.<br/>
-> You can also use this batch file to [schedule](https://www.windowscentral.com/how-create-automated-task-using-task-scheduler-windows-10) the script to run.
----
-
-
-### ⚠️ **Do you Need Help or have Feedback?**
-- Join the [Discord](https://discord.gg/VBNUJd7tx3).
-
----
-## ？ FAQ
-**Is there a docker container?**<br/>
-I made this for my personal use. I don't use docker myself and have no plans atm to learn how to make dockerfiles.<br/>
-If anyone wants to help make one, please feel free to create a pull request!
-  
+> Salve com a extensão .bat . Você agora pode clicar duas vezes neste `batch file` para iniciar diretamente o script.<br/>
+> Você também pode user esse `batch file´ para [agendar](https://www.windowscentral.com/how-create-automated-task-using-task-scheduler-windows-10) a execução do Script.
+ 
 ---  
-### ❤️ Support the Project
-If you like this project, please ⭐ star the repository and share it with the community!
-
-<br/>
+### ❤️ Apoie o Projeto
+Se você gosta deste projeto, por favor de uma ⭐ ao repositório e comprtilhe com a comunidade!
 
 [!["Buy Me A Coffee"](https://github.com/user-attachments/assets/5c30b977-2d31-4266-830e-b8c993996ce7)](https://www.buymeacoffee.com/neekokeen)
+>[!NOTE]
+> O Byy Me A Coffee acima direciona para o usuário original de onde esse script foi copiado, a trabalho duro foi dele e merece seu reconhecimento.
+> Eu apenas adapatei o Script e inclui algumas funcionalidades.

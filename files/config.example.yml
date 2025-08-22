@@ -173,7 +173,7 @@ text_ended:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 50
+  vertical_offset: 15
   font_size: 65
   font_color: "#00ff3d" #VERDE
   #font: Ajuste com a fonte dessejada.
@@ -205,7 +205,7 @@ text_returning:
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 50
+  vertical_offset: 15
   font_size: 65
   font_color: "#ff9000" #MOSTARDA
   #font: Ajuste com a fonte dessejada.
@@ -315,7 +315,7 @@ text_new_episode_added:
 ################################################################################
 #Arquivo: 04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml
 
-recent_days_fresh_espisode_added: 7
+recent_days_fresh_espisode_added: 10
 #create_recent_new_episode_added_overlay_yaml
 
 backdrop_recent_new_episode_added:
@@ -344,7 +344,7 @@ text_recent_new_episode_added:
 ################################################################################
 #Arquivo: 05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml
 
-recent_days_new_season_added: 7
+recent_days_new_season_added: 10
 #create_new_season_added_overlay_yaml
 #create_new_season_added_overlay_yaml
 backdrop_new_season_added:
@@ -404,7 +404,7 @@ text_new_show:
 ################################################################################
 #Arquivo: 13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
 
-recent_days_episode_on_season: 15
+recent_days_episode_on_season: 7
 #create_episode_on_season_overlay_yaml
 backdrop_episode_season:
   enable: true
@@ -433,7 +433,7 @@ text_episode_season:
 ################################################################################
 #Arquivo: 14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
 
-recent_days_new_episode_on_season: 15
+recent_days_new_episode_on_season: 10
 #create_new_episode_on_season_overlay_yaml
 backdrop_new_episode_season:
   enable: true
@@ -462,7 +462,7 @@ text_new_episode_season:
 ################################################################################
 #Arquivo: 15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml
 
-recent_days_season_added: 15
+recent_days_season_added: 10
 #create_season_added_overlay_yaml
 backdrop_season_added:
   enable: true
@@ -489,7 +489,7 @@ text_season_added:
 ##########                    TEMPORADA RECÉM-LANÇADA                 ##########
 ################################################################################
 #Arquivo: 16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml
-recent_days_new_season_released: 15
+recent_days_new_season_released: 10
 #create_new_season_released_overlay_yaml
 backdrop_new_season_released:
   enable: true
@@ -520,7 +520,7 @@ text_new_season_released:
 ################################################################################
 #Arquivo: 17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml
 
-recent_days_episode_added: 15
+recent_days_episode_added: 7
 #create_episode_added_overlay_yaml
 backdrop_episode_added:
   enable: true
@@ -548,7 +548,8 @@ text_episode_added:
 ################################################################################
 #Arquivo: 18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml
 
-recent_days_new_episode_released: 15
+recent_days_new_episode_released: 10
+
 #create_new_episode_released_overlay_yaml
 backdrop_new_episode_released:
   enable: true
