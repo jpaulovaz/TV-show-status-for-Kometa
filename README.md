@@ -235,7 +235,7 @@ Renomeie `config.example.yml` to `config.yml` e edite o que desejar:
 >Divisores podem ser `/`, `-` ou um espaço
 
 ---
-## 🚀 Uso -executando o script
+## 🚀 Executando o Script
 
 Se você estiver usando a configuração **Docker**, o script será executado automaticamente de acordo com o cronograma definido pela variável `cron` no seu `docker-compose.yml`. Você pode inspecionar os logs do contêiner para ver a saída e monitorar a atividade:
 
@@ -262,13 +262,14 @@ A configuração anterior será apagada para que o Kometa remova automaticamente
 >pause
 > ```
 > Salve com a extensão .bat . Você agora pode clicar duas vezes neste `batch file` para iniciar diretamente o script.<br/>
-> Você também pode user esse `batch file´ para [agendar](https://www.windowscentral.com/how-create-automated-task-using-task-scheduler-windows-10) a execução do Script.
+> Você também pode user esse `batch file` para [agendar](https://www.windowscentral.com/how-create-automated-task-using-task-scheduler-windows-10) a execução do Script.
  
 ---  
 ### ❤️ Apoie o Projeto
 Se você gosta deste projeto, por favor de uma ⭐ ao repositório e comprtilhe com a comunidade!
 
+---
 [!["Buy Me A Coffee"](https://github.com/user-attachments/assets/5c30b977-2d31-4266-830e-b8c993996ce7)](https://www.buymeacoffee.com/neekokeen)
 >[!NOTE]
-> O Byy Me A Coffee acima direciona para o usuário original de onde esse script foi copiado, a trabalho duro foi dele e merece seu reconhecimento.
+> O Buy Me A Coffee acima direciona para o usuário original de onde esse script foi copiado, a trabalho duro foi dele e merece seu reconhecimento.
 > Eu apenas adapatei o Script e inclui algumas funcionalidades.
