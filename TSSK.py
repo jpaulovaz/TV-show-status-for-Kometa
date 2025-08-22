@@ -14,6 +14,8 @@ print = functools.partial(print, flush=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "1.2.0"
 
+print(f"Usuário: {os.getenv("DOCKER", "false").lower()}.")
+print(f"Usuário: {int(os.getenv("PUID", "1000"))} Grupo:{int(os.getenv("PGID", "1000"))} Em execução.")
 
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
@@ -22,7 +24,7 @@ if IS_DOCKER:
     overlay_path = "/app/config/kometa/tssk/"
     collection_path = "/app/config/kometa/tssk/"
 
-print(f"Usuário: {puid} Grupo:{pgid} Em execução.")
+
 
 # ANSI color codes
 GREEN = '\033[32m'
