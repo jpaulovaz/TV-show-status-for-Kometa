@@ -11,15 +11,15 @@ import functools
 print = functools.partial(print, flush=True)
 
 # Constants
-IS_DOCKER = os.getenv("DOCKER", "false").lower()
+IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "1.2.0"
 
-#if IS_DOCKER:
-os.makedirs("/app/config/kometa/tssk", exist_ok=True)
-puid = int(os.getenv("PUID", "1000"))
-pgid = int(os.getenv("PGID", "1000"))
-overlay_path = "/app/config/kometa/tssk/"
-collection_path = "/app/config/kometa/tssk/"
+if IS_DOCKER:
+    os.makedirs("/app/config/kometa/tssk", exist_ok=True)
+    puid = int(os.getenv("PUID", "1000"))
+    pgid = int(os.getenv("PGID", "1000"))
+    overlay_path = "/app/config/kometa/tssk/"
+    collection_path = "/app/config/kometa/tssk/"
 
 print(f"DOCKER {IS_DOCKER}")
 print(f"puid {puid}")
