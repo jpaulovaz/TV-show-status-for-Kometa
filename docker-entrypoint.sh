@@ -9,8 +9,10 @@ cp -r /app/files/* /app/config/
 # Ajustar permissões se necessário
 chown -R "${PUID}:${PGID}" /app
 
-#echo "$CRON cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" > /etc/cron.d/tssk-cron
-echo "$CRON DOCKER=$DOCKER cd /app && /usr/local/bin/python /app/TSSK.py 2>&1 | tee -a /var/log/cron.log" > /etc/cron.d/tssk-cron
+# Adiciona a diretiva USER para que o cron execute o trabalho como 'appuser'
+echo "SHELL=/bin/bash" > /etc/cron.d/tssk-cron
+echo "USER=appuser" >> /etc/cron.d/tssk-cron
+echo "$CRON DOCKER=$DOCKER cd /app && /usr/local/bin/python /app/TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
 
 chmod 0644 /etc/cron.d/tssk-cron
 crontab /etc/cron.d/tssk-cron
