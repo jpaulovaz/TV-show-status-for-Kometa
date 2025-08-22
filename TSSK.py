@@ -11,7 +11,7 @@ import functools
 print = functools.partial(print, flush=True)
 
 # Constants
-IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
+IS_DOCKER = os.getenv("DOCKER", "falsa").lower() == "true"
 VERSION = "1.2.0"
 
 #if IS_DOCKER:
