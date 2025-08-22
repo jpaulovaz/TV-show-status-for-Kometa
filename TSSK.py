@@ -12,7 +12,7 @@ print = functools.partial(print, flush=True)
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
-VERSION = "1.2.0"
+VERSION = "2.0.0"
 
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
