@@ -25,6 +25,7 @@ print(f"DOCKER {IS_DOCKER}")
 print(f"puid {puid}")
 print(f"pgid {pgid}")
 
+
 # ANSI color codes
 GREEN = '\033[32m'
 ORANGE = '\033[33m'
