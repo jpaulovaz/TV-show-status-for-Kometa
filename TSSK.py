@@ -14,9 +14,6 @@ print = functools.partial(print, flush=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "1.2.0"
 
-print(f"Usuário: {os.getenv("DOCKER", "false").lower()}.")
-print(f"Usuário: {int(os.getenv("PUID", "1000"))} Grupo:{int(os.getenv("PGID", "1000"))} Em execução.")
-
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
     puid = int(os.getenv("PUID", "1000"))
