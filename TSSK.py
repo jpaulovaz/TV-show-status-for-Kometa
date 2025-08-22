@@ -1090,7 +1090,7 @@ def create_new_season_added_overlay_yaml(output_file, config_sections, recent_da
                 "type": "season",
                 "all":{
                     "added": recent_days,
-                    "episode_air_date": "15"}},
+                    "episode_air_date": int(recent_days)*2}},
             "overlay": backdrop_config
         }
     
@@ -1112,7 +1112,7 @@ def create_new_season_added_overlay_yaml(output_file, config_sections, recent_da
                 "type": "season",
                 "all":{
                     "added": recent_days,
-                    "episode_air_date": "15"}},
+                    "episode_air_date": int(recent_days)*2}},
             "overlay": text_config
         }
     
@@ -1347,7 +1347,7 @@ def create_new_season_released_overlay_yaml(output_file, config_sections, recent
                 "type": "season",
                 "all":{
                     "added": recent_days,
-                    "episode_air_date": "15"}},
+                    "episode_air_date": int(recent_days)*2}},
             "overlay": backdrop_config
         }
     
@@ -1369,7 +1369,7 @@ def create_new_season_released_overlay_yaml(output_file, config_sections, recent
                 "type": "season",
                 "all":{
                     "added": recent_days,
-                    "episode_air_date": "15"}},
+                    "episode_air_date": int(recent_days)*2}},
             "overlay": text_config
         }
     
