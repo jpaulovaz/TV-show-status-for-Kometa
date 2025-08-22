@@ -1,7 +1,7 @@
 # Diferenças do Script Original
 * Script ajustado para caracteres pt-BR;
 * Corrigido o fato do script não salvar os arquivos na pasta do Kometa quando executando em Docker;
-* Inseridos alguns scrips para filtros de situações no passado vindo do Plex.
+* Inseridos alguns scripts para filtros de situações no passado vindo do Plex.
 * Script Traduzido para pt-BR.
 
 # 📺 Status dos Seriados para Kometa
@@ -9,10 +9,10 @@ Categorias Sonarr:
 *  Novos Seriados, que foram incluídos dentro de X dias passados
 *  Seriados que um fim de temporada tenha sido adicionados e foi ao ar dentro de X dias passados
 *  Seriados com episódios futuros dentro de X dias
-*  Seriados que uma nova temoporada ir iniciar dentro de X dias
+*  Seriados que uma nova temporada ir iniciar dentro de X dias
 *  Seriados que uma nova temporada foi ao ar dentro de X dias
-*  Seriaods com um episódio final vindo dentro de X dias
-*  Seriados que vão Retornar (novos episódio ou temporadas foram confirados, mas não dentro do período informado acima)
+*  Seriados com um episódio final vindo dentro de X dias
+*  Seriados que vão Retornar (novos episódio ou temporadas foram confirmados, mas não dentro do período informado acima)
 *  Seriados Finalizados (Sem novos episódio ou temporadas no futuro)
 
 Categorias Plex:
@@ -22,21 +22,21 @@ Categorias Plex:
   * Overlay para Seriados que tenham alguma temporada adicionada com episódio recente dentro de X dias passados
   * Novo Seriado Adicionado dentro de X dias passados
 
-* Nivel Temporada:
+* Nível Temporada:
   * Overlay na temporada que tiver algum episódio adicionado dentro de X dias passados
   * Overlay na temporada que tiver algum episódio novo adicionado dentro de X dias passados
   * Overlay na temporada que tiver sido incluída dentro de X dias passados
-  * Overlay ba temporada que tiver sido incluída dentro de X dias passados com algum episódio novo (Temporada Atual)
+  * Overlay na temporada que tiver sido incluída dentro de X dias passados com algum episódio novo (Temporada Atual)
 
-* Nivel Episódio:
+* Nível Episódio:
     * Overlay no episódio adicionado dentro de X dias passados
     * Overlay no episódio novo adicionado dentro de X dias passados
    
-A diferença entre item novo e item adicionado é a idade, pois novo se refere ao que foi ao ar recentemete, e adicionado independe de idade.
+A diferença entre item novo e item adicionado é a idade, pois novo se refere ao que foi ao ar recentemente, e adicionado independe de idade.
 
 
   
-Exemplo de Overlay (você pode customizar complemente a localização, cor texttos e etc:
+Exemplo de Overlay (você pode customizar complemente a localização, cor textos e etc):
 ![Image](https://github.com/user-attachments/assets/e7c517cc-5164-41d9-8e5e-015577aad36e)
 
 Exemplo de Coleção:</br>
@@ -45,12 +45,12 @@ Exemplo de Coleção:</br>
 ---
 
 ## ✨ Funcionalidades
-- 🗓️ **Detecta episódio no futuro, novas temporadas e finais**: Busca no Sonarr pelelos horários dos seriados.
-- 🏁 **Rótulos para Episódios finais**: Ussa uma overlay separada para seriados que um final foi adicionado.
--  ▼ **Opicionalmente Filtra os não monitorados**: Pula seriados que não são monitorados no Radarr.
--  🪄 **Customizavel**: Possibilidade de mudar o formado da Data, nome da Coleção, posição da Overlay, texto, ..
--  🌎 **Fuso Horário**:Escolha seu fuso horário indepente de onde o script esteja sendo executado (Docker pode definir direto na variavel TZ=America/Sao_Paulo).
-- ℹ️ **Informes**: Lista os seriados com correspondêncoas e os que foram pulados (não monitorados).
+- 🗓️ **Detecta episódio no futuro, novas temporadas e finais**: Busca no Sonarr pelos horários dos seriados.
+- 🏁 **Rótulos para Episódios finais**: Usa uma overlay separada para seriados que um final foi adicionado.
+-  ▼ **Opcionalmente Filtra os não monitorados**: Pula seriados que não são monitorados no Radarr.
+-  🪄 **Customizável**: Possibilidade de mudar o formado da Data, nome da Coleção, posição da Overlay, texto, ..
+-  🌎 **Fuso Horário**:Escolha seu fuso horário indepenindependentemente de onde o script esteja sendo executado (Docker pode definir direto na variável  TZ=America/Sao_Paulo).
+- ℹ️ **Informes**: Lista os seriados com correspondências e os que foram pulados (não monitorados).
 - 📝 **Cria arquivo .yml**: Cria um arquivo de coleção e overlay que podem ser usados no Kometa (Arquivos de coleção não são gerados para os filtros feitos pelo Plex)
 ---
 
@@ -70,11 +70,11 @@ cd TV-show-status-for-Kometa
 
 > [!TIP]
 > Se você não sabe o que isso significa, então simplesmente baixe o script pressionando o botão verde 'Code' acima e em seguida 'Download Zip'. 
-> Estraia os arquivos na pasta desejada.
+> Extraia os arquivos na pasta desejada.
 
-2. Instale as dempendências:
+2. Instale as dependências:
 - Certifique de ter [Python](https://www.python.org/downloads/) instalado (`>=3.9`).
-- Abra um terminal apontando para o diretório deo scpirt.
+- Abra um terminal apontando para o diretório do scpirt.
 > [!TIP]
 >Usuário Windows:  
 > Vá para a pasta do TSSK (onde TSSK.py está). Clique com botão direito do mouse em um espaço em branco dentro da pasta e selecione  `Abrir no Terminal`.
@@ -87,9 +87,9 @@ pip install -r requirements.txt
 
 ### ▶️ opção 2: Docker (Recomendado para automatizar)
 
-Se você prefere não instalar o Python e suas dependência manualmente, você pode usar a imagem oficial deo Docker.
+Se você prefere não instalar o Python e suas dependência manualmente, você pode usar a imagem oficial do Docker.
 1. Certifique que o [Docker](https://docs.docker.com/get-docker/) esteja instalado.
-2. Baixe o `docker-compose.yml` fornecido nesse reposítorio(ou copie o exemplo abaixo).
+2. Baixe o `docker-compose.yml` fornecido nesse repositório(ou copie o exemplo abaixo).
 3. Execute o container:
 ```sh
 docker compose up -d
@@ -97,13 +97,13 @@ docker compose up -d
 
 O que isso fará:
 - Baixa a versão mais recente da imagem `joaopaulofvaz/tssk` no Docker Hub
-- Executa o scitpr dentro em um horário definido ( por padrão 2AM)
+- Executa o script dentro em um horário definido ( por padrão 2AM)
 - Monta seu diretório de configuração e diretório de saída dentro do container
 
-Você pode customizar a definição de horário modificando a variavel `CRON` no arquivo `docker-compose.yml`.
+Você pode customizar a definição de horário modificando a variável  `CRON` no arquivo `docker-compose.yml`.
 
 > [!TIP]
-> Você pode apontar o TSSK para salver as coleções/overlays direto no diretório deo kometa ajustando os pontos de montagem do docker.
+> Você pode apontar o TSSK para salvar as coleções/overlays direto no diretório do kometa ajustando os pontos de montagem do docker.
 > 
 **Exemplo `docker-compose.yml`:**
 
@@ -131,15 +131,15 @@ services:
 
 ### 1️⃣ Edite seu arquivo de configuração do Kometa
 
-Abre o seu arquivo config.yml do **Kometa**  (normalemente em `Kometa/config/config.yml`, NÃO é o seu arquivo TSSK).  
+Abre o seu arquivo config.yml do **Kometa**  (normalmente  em `Kometa/config/config.yml`, NÃO é o seu arquivo TSSK).  
 O diretório depende de onde seus arquivos sejam configurados no seu setup.
 
 O arquivo `yml`criado pelo TSSK que o Kometa usa são armazenados em pastas diferentes dependendo de como você executa seu script:
 
 - **Instalação Manual**: os arquivos são salvos diretamente na pasta `kometa`onde o TSSK está(ex: `TSSK/kometa/`)
-- **Instalação Docker**: Os arquivos são salvos dentro de `/config/kometa/tssk/` no container - presumindo que vocêtenha montado a pasta `config` do Kometa no seu container
+- **Instalação Docker**: Os arquivos são salvos dentro de `/config/kometa/tssk/` no container - presumindo que você tenha montado a pasta `config` do Kometa no seu container
 
-Certifiquese que seu arquivo de configuração do Kometa use o diretório correto ao fazer referência a esses arquivos.
+Certifique se  que seu arquivo de configuração do Kometa use o diretório correto ao fazer referência a esses arquivos.
 
 No seu arquivo de configuração do Kometa, inclua as seguintes linhas abaixo da sua biblioteca de seriados:
 
@@ -178,13 +178,13 @@ TV Shows:
 ```
 
 > [!TIP]
-> Adicione apenas os arquivos para as catégorias que você quiser ativar. Todas são opcionais e geradas de forma idependente baseado no seru arquivos de configuração.
-> Os arquivos de Overlay oferecem melhor aproveitamento se forem aplicados na sequência numêrica de acordo com o numero informado no nome do arquivo.
+> Adicione apenas os arquivos para as catégorias que você quiser ativar. Todas são opcionais e geradas de forma independente baseado no seus arquivos de configuração.
+> Os arquivos de Overlay oferecem melhor aproveitamento se forem aplicados na sequência numérica de acordo com o numero informado no nome do arquivo.
 
 ### 2️⃣ Edite seu arquivos de Configuração
 ---
 
-## ⚙️ Configuration
+## ⚙️ Configuração
 Renomeie `config.example.yml` to `config.yml` e edite o que desejar:
 
 - **sonarr_url:** Insira a URL seu Sonarr.
@@ -193,43 +193,44 @@ Renomeie `config.example.yml` to `config.yml` e edite o que desejar:
 - **utc_offset:** Configure o  deslocamento do [Fuso horário UTC](https://en.wikipedia.org/wiki/List_of_UTC_offsets). Ex.: Rio de Janeiro: -3, Amsterdam: +1, Tokyo: +9, etc.
 
 >[!NOTE]
-> Algumas pessoas pode ter seu servidor em diferentes fusos horários (Ex. usando uma seedbox), Portanto o script não converte o dia de exibição para o seu timezone local. Ainda assim você pode informar o deslocamento do fuso horario desejado.
+> Algumas pessoas pode ter seu servidor em diferentes fusos horários (Ex. usando uma seedbox), Portanto o script não converte o dia de exibição para o seu timezone local. Ainda assim você pode informar o deslocamento do fuso horário desejado.
 
 </br>
 
 - **Bloco de Coleção:**
   - **collection_name:** Nome da Coleção.
   - **smart_label:** Escolha a opção de Organização (sort). [Mais Informações Aqui](https://metamanager.wiki/en/latest/files/builders/smart/#sort-options)
-  - **sort_title:** Organização dos titulos da Coleção.
-  - etc
+  - **sort_title:** Organização dos títulos da Coleção.
+  - etc.
+
 >[!TIP]
->Você pode inserir quantas variaveis do kometa nesse blocoe o arquivo vai adicionalas automaticamento no arquivo .yml gerado.</br>
+>Você pode inserir quantas variáveis  do kometa nesse bloco e o arquivo vai adiciona-las automaticamente no arquivo .yml gerado.</br>
 >`collection_name` é usado para nomear a coleção e será removido do bloco da coleção.
   
 - **backdrop block:**
   - **enable:** Se você quer ou não um backdrop(o banner colorido atrás do texto)
-  - Mude o tamanho do backdrop,cor e posição. Você pode adicionar qualquer variavel relevante aqui.[Mais informações em](https://kometa.wiki/en/latest/files/overlays/?h=overlay#backdrop-overlay)
+  - Mude o tamanho do backdrop, cor e posição. Você pode adicionar qualquer variável  relevante aqui.[Mais informações em](https://kometa.wiki/en/latest/files/overlays/?h=overlay#backdrop-overlay)
     
 - **text block:** 
   - **date_format:** O formato de data que será usado na Overlay. Ex: "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   - **capitalize_dates:** `true` vai deixar a data em caixa alta.
   - **use_text:** Texto que será usado na overlay antes da data. EX: "NOVA TEMPORADA"
-  - Mude a cor e posicionamento do texto. Você pode obter as variaveis relevantes em [Mais informações aqui](https://kometa.wiki/en/latest/files/overlays/?h=overlay#text-overlay)
+  - Mude a cor e posicionamento do texto. Você pode obter as variáveis  relevantes em [Mais informações aqui](https://kometa.wiki/en/latest/files/overlays/?h=overlay#text-overlay)
 
 
 >[!NOTE]
 > Esses São os formatos de data que você pode usar:<br/>
-> `d`: Dia com 1 digito (1)<br/>
-> `dd`: Dia com 2 digitos (01)<br/>
+> `d`: Dia com 1 dígito  (1)<br/>
+> `dd`: Dia com 2 dígitos  (01)<br/>
 > `ddd`: Dia da Semana Abreviado (SEG)<br/>
 > `dddd`: Dia da Semana Completo (Domingo)<br/>
 ><br/>
-> `m`: Mês com 1 digito (1)<br/>
-> `mm`: Mês com 2 digitos (01)<br/>
+> `m`: Mês com 1 dígito  (1)<br/>
+> `mm`: Mês com 2 dígitos  (01)<br/>
 > `mmm`: Mês Abreviado (Jan)<br/>
 > `mmmm`: Mês Completo (Janeiro)<br/>
 ><br/>
-> `yy`: Ano com 2 digitos (25)<br/>
+> `yy`: Ano com 2 dígitos  (25)<br/>
 > `yyyy`: Ano Completo (2025)
 >
 >Divisores podem ser `/`, `-` ou um espaço
@@ -254,7 +255,7 @@ A configuração anterior será apagada para que o Kometa remova automaticamente
 
 > [!TIP]
 > Os usuários do Windows podem criar um `batch file` para iniciar rapidamente o script.<br/>
-> Digite `"[path to your python.exe]" "[path to the script]" -r pause"` no editor de text
+> Digite `"[caminho para o python.exe]" "[caminho para o script]" -r pause"` no editor de text
 >
 > Exemplo:
 > ```
@@ -262,14 +263,14 @@ A configuração anterior será apagada para que o Kometa remova automaticamente
 >pause
 > ```
 > Salve com a extensão .bat . Você agora pode clicar duas vezes neste `batch file` para iniciar diretamente o script.<br/>
-> Você também pode user esse `batch file` para [agendar](https://www.windowscentral.com/how-create-automated-task-using-task-scheduler-windows-10) a execução do Script.
+> Você também pode usar esse `batch file` para [agendar](https://www.windowscentral.com/how-create-automated-task-using-task-scheduler-windows-10) a execução do Script.
  
 ---  
 ### ❤️ Apoie o Projeto
-Se você gosta deste projeto, por favor de uma ⭐ ao repositório e comprtilhe com a comunidade!
+Se você gosta deste projeto, por favor de uma ⭐ ao repositório e compartilhe com a comunidade!
 
 ---
 [!["Buy Me A Coffee"](https://github.com/user-attachments/assets/5c30b977-2d31-4266-830e-b8c993996ce7)](https://www.buymeacoffee.com/neekokeen)
 >[!NOTE]
 > O Buy Me A Coffee acima direciona para o usuário original de onde esse script foi copiado, a trabalho duro foi dele e merece seu reconhecimento.
-> Eu apenas adapatei o Script e inclui algumas funcionalidades.
+> Eu apenas adaptei o Script e inclui algumas funcionalidades.
