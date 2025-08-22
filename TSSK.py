@@ -14,7 +14,7 @@ print = functools.partial(print, flush=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "1.2.0"
 
-
+#if IS_DOCKER:
 os.makedirs("/app/config/kometa/tssk", exist_ok=True)
 puid = int(os.getenv("PUID", "1000"))
 pgid = int(os.getenv("PGID", "1000"))
