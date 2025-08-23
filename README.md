@@ -1,3 +1,5 @@
+Este é um fork de https://github.com/netplexflix/TV-show-status-for-Kometa, todo crédito deve ser direcionado ao autor original.
+
 # Diferenças do Script Original
 * Script ajustado para caracteres pt-BR;
 * Corrigido o fato do script não salvar os arquivos na pasta do Kometa quando executando em Docker;
@@ -37,7 +39,12 @@ A diferença entre item novo e item adicionado é a idade, pois novo se refere a
 
   
 Exemplo de Overlay (você pode customizar complemente a localização, cor textos e etc):
-![Image](https://github.com/user-attachments/assets/e7c517cc-5164-41d9-8e5e-015577aad36e)
+
+![Image](https://github.com/user-attachments/assets/caccb1c7-4799-4b41-b133-8ae128e20a50)
+
+---
+
+![Image](https://github.com/user-attachments/assets/a49b0e0c-0b98-4f20-b147-01525a23697d)
 
 Exemplo de Coleção:</br>
 <img width="696" height="403" alt="Image" src="https://github.com/user-attachments/assets/b52c411f-4d73-4386-93c4-38cee8ea2998" />
