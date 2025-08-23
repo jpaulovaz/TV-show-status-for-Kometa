@@ -14,6 +14,14 @@ print = functools.partial(print, flush=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "2.0.0"
 
+# ANSI color codes
+GREEN = '\033[32m'
+ORANGE = '\033[33m'
+BLUE = '\033[34m'
+RED = '\033[31m'
+RESET = '\033[0m'
+BOLD = '\033[1m'
+
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
     puid = int(os.getenv("PUID", "1000"))
@@ -23,15 +31,6 @@ if IS_DOCKER:
     print(f"{BLUE}DOCKER {IS_DOCKER}")
     print(f"{BLUE}PUID {puid}")
     print(f"{BLUE}PGID {pgid}")
-
-
-# ANSI color codes
-GREEN = '\033[32m'
-ORANGE = '\033[33m'
-BLUE = '\033[34m'
-RED = '\033[31m'
-RESET = '\033[0m'
-BOLD = '\033[1m'
 
 def check_for_updates():
     print(f"Verificando atualizações para TSSK {VERSION}...")
