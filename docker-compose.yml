@@ -1,6 +1,6 @@
 services:
   tssk:
-    image: joaopaulofvaz/tssk
+    image: joaopaulofvaz/tssk:latest
     container_name: tssk
     environment:
       - CRON=0 2 * * * # todos os dias às 02h da manhã
