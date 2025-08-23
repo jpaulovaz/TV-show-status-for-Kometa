@@ -27,4 +27,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.joaopaulofvaz }}/tssk:desenvolvimento # Ajuste aqui
+          tags: ${{ secrets.DOCKER_USERNAME }}/tssk:desenvolvimento # Ajuste aqui
