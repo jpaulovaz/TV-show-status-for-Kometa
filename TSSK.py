@@ -20,9 +20,9 @@ if IS_DOCKER:
     pgid = int(os.getenv("PGID", "1000"))
     overlay_path = "/app/config/kometa/tssk/"
     collection_path = "/app/config/kometa/tssk/"
-    print(f"DOCKER {IS_DOCKER}")
-    print(f"puid {puid}")
-    print(f"pgid {pgid}")
+    print(f"{BLUE}DOCKER {IS_DOCKER}")
+    print(f"{BLUE}PUID {puid}")
+    print(f"{BLUE}PGID {pgid}")
 
 
 # ANSI color codes
@@ -134,7 +134,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -147,7 +147,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -961,32 +961,20 @@ def create_overlay_yaml(output_file, shows, config_sections):
             tvdb_ids_str = ", ".join(str(i) for i in sorted(all_tvdb_ids) if i)
             
             # Extract category name from filename
-        #    if "NOVA_TEMPORADA_INICIADA" in output_file:
-        #        block_key = "TSSK_new_season_started"
-        #    elif "FIM_TEMPORADA" in output_file:
-        #        block_key = "TSSK_season_finale"
-        #    elif "EPISODIO_FINAL" in output_file:
-        #        block_key = "TSSK_final_episode"
-        #    elif "FINALIZADOS" in output_file:
-        #        block_key = "TSSK_ended"
-        #    elif "RETURNING" in output_file:
-        #        block_key = "TSSK_returning"
-        #    else:
-        #        block_key = "TSSK_text"  # fallback
-
-            # Extract category name from filename
             if "NOVA_TEMPORADA_INICIADA" in output_file:
-                block_key = "TSSK_new_season_started"
+                block_key = "TSSK_nova_temporada_iniciada"
             elif "FIM_TEMPORADA" in output_file:
-                block_key = "TSSK_season_finale"
+                block_key = "TSSK_final_de_temporada"
             elif "EPISODIO_FINAL" in output_file:
-                block_key = "TSSK_final_episode"
+                block_key = "TSSK_episódio_final"
             elif "FINALIZADOS" in output_file:
-                block_key = "TSSK_ended"
+                block_key = "TSSK_finalizados"
             elif "RETORNANDO" in output_file:
-                block_key = "TSSK_returning"
+                block_key = "TSSK_retornando"
+            elif "CANCELADOS" in output_file:
+                block_key = "TSSK_cancelados"
             else:
-                block_key = "TSSK_text"  # fallback
+                block_key = "TSSK_overlay"  # fallback
             
             overlays_dict[block_key] = {
                 "overlay": sub_overlay_config,
@@ -1034,7 +1022,7 @@ def create_new_episode_added_overlay_yaml(output_file, config_sections, recent_d
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_recent_episode"] = {
+        overlays_dict["episodios_recen_adicionados_nv_seriado"] = {
             "run_definition": "show",
             "builder_level": "show",
             "plex_search": {
@@ -1084,7 +1072,7 @@ def create_recent_new_episode_added_overlay_yaml(output_file, config_sections, r
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["fresh_new_recent_episode"] = {
+        overlays_dict["episodios_novos_adicionados_nv_seriado"] = {
             "run_definition": "show",
             "builder_level": "show",
             "plex_search": {
@@ -1135,7 +1123,7 @@ def create_new_season_added_overlay_yaml(output_file, config_sections, recent_da
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["fresh_new_recent_season"] = {
+        overlays_dict["nova_temporada_adicionada_nv_seriado"] = {
             "run_definition": "show",
             "builder_level": "show",
             "plex_search": {
@@ -1186,7 +1174,7 @@ def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_show"] = {
+        overlays_dict["seriado_adicionado_recentemente_nv_seriado"] = {
             "run_definition": "show",
             "builder_level": "show",
             "plex_search": {
@@ -1238,7 +1226,7 @@ def create_episode_on_season_overlay_yaml(output_file, config_sections, recent_d
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["episode_season"] = {
+        overlays_dict["episodio_adicionado_temporada_nv_temporada"] = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
@@ -1289,7 +1277,7 @@ def create_new_episode_on_season_overlay_yaml(output_file, config_sections, rece
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_episode_season"] = {
+        overlays_dict["episodio_novo_temporada_nv_temporada"] = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
@@ -1340,7 +1328,7 @@ def create_season_added_overlay_yaml(output_file, config_sections, recent_days):
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_season"] = {
+        overlays_dict["temporada_adicionada_nv_temporada"] = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
@@ -1392,7 +1380,7 @@ def create_new_season_released_overlay_yaml(output_file, config_sections, recent
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_released_season"] = {
+        overlays_dict["nova_temporada_adicionada_nv_temporada"] = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
@@ -1444,7 +1432,7 @@ def create_episode_added_overlay_yaml(output_file, config_sections, recent_days)
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_released_season"] = {
+        overlays_dict["episodio_adicionado_nv_episodio"] = {
             "run_definition": "show",
             "builder_level": "episode",
             "plex_search": {
@@ -1495,7 +1483,7 @@ def create_new_episode_released_overlay_yaml(output_file, config_sections, recen
         
         text_config["name"] = f"text({use_text})"
         
-        overlays_dict["new_released_season"] = {
+        overlays_dict["novo_episodio_adicionado_nv_episodio"] = {
             "run_definition": "show",
             "builder_level": "episode",
             "plex_search": {
@@ -1529,34 +1517,37 @@ def create_collection_yaml(output_file, shows, config):
     collection_name = ""
     
     if "FIM_TEMPORADA" in output_file:
-        config_key = "collection_season_finale"
+        config_key = "colecao_fim_temporada"
         summary = f"Seriados com um final de temporada que foi ao ar nós últimos {config.get('recent_days_season_finale', 21)} dias"
     elif "EPISODIO_FINAL" in output_file:
-        config_key = "collection_final_episode"
+        config_key = "colecao_episodio_final"
         summary = f"Seriados com um episódio final que foi ao ar nós últimos {config.get('recent_days_final_episode', 21)} dias"
     elif "NOVA_TEMPORADA_INICIADA" in output_file:
-        config_key = "collection_new_season_started"
+        config_key = "colecao_nova_temporada_iniciada"
         summary = f"Seriados com uma nova temporada que começou no passado {config.get('recent_days_new_season_started', 14)} days"
     elif "NOVA_TEMPORADA" in output_file:
-        config_key = "collection_new_season"
+        config_key = "colecao_nova_temporada"
         summary = f"Seriados com uma nova temporada começando dentro {config.get('future_days_new_season', 31)} days"
     elif "PROXIMOS_EPISODIOS" in output_file:
-        config_key = "collection_upcoming_episode"
+        config_key = "colecao_proximos_episodios"
         summary = f"Seriados com um próximo episódio dentro {config.get('future_days_upcoming_episode', 31)} days"
     elif "PROXIMOS_FINAIS" in output_file:
-        config_key = "collection_upcoming_finale"
+        config_key = "colecao_procimos_finais"
         summary = f"Seriados com um final de temporada dentro de {config.get('future_days_upcoming_finale', 31)} days"
     elif "FINALIZADOS" in output_file:
-        config_key = "collection_ended"
+        config_key = "colecao_finalizados"
         summary = "Seriados que já foram Finalizados."
-    elif "RETURNING" in output_file:
-        config_key = "collection_returning"
-        summary = "Retornando programas sem os próximos episódios dentro dos prazos escolhidos"
+    elif "CANCELADOS" in output_file:
+        config_key = "colecao_cancelados"
+        summary = "Seriados que foram cancelados."
+    elif "RETORNANDO" in output_file:
+        config_key = "colecao_seriados_que_retornarao"
+        summary = "Seriados que tiveram seu retorno confirmado"
     else:
         # Default fallback
         config_key = None
-        collection_name = "TV Collection"
-        summary = "TV Collection"
+        collection_name = "colecao_de_seriados"
+        summary = "Coleção de Seriados"
     
     # Get the collection configuration if available
     if config_key and config_key in config:
@@ -1668,6 +1659,7 @@ def create_collection_yaml(output_file, shows, config):
 def main():
     start_time = datetime.now()
     print(f"{BLUE}{'*' * 40}\n{'*' * 15} TSSK {VERSION} {'*' * 15}\n{'*' * 40}{RESET}")
+    print(f"\n{BLUE}Inicio do Processo: {start_time.strftime('%H:%M:%S')}\n")
     check_for_updates()
 
     config = load_config('config/config.yml')
@@ -2130,14 +2122,12 @@ def main():
         ended_shows, cancelled_shows = find_ended_shows(
             sonarr_url, sonarr_api_key, tmdb_api_key
         )
-
         # Filter out shows that are in the season finale or final episode categories
         ended_shows = [
             show
             for show in ended_shows
             if show.get("tvdbId") not in all_excluded_tvdb_ids
         ]
-
         cancelled_shows = [
             show
             for show in cancelled_shows
@@ -2153,22 +2143,16 @@ def main():
             if show.get("tvdbId"):
                 all_included_tvdb_ids.add(show["tvdbId"])
 
-                if ended_shows:
-                    print(f"\n{GREEN}Seriados Finalizados:{RESET}")
-                    for show in ended_shows:
-                        print(f"- {show['title']}")
-                
-                if cancelled_shows:
+        # ---- Cancelled Shows ----
+        if cancelled_shows:
                     print(f"\n{GREEN}Seriados que foram Cancelados:{RESET}")
                     for show in cancelled_shows:
                         print(f"- {show['title']}")
                         
-                        
-        # ---- Cancelled Shows ----
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
-                               {"backdrop": config.get("backdrop_ended", {}),
-                                "text": config.get("text_ended", {})})
+                               {"backdrop": config.get("backdrop_cancelled", {}),
+                                "text": config.get("text_cancelled", {})})
         
             create_collection_yaml(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
             
@@ -2177,12 +2161,16 @@ def main():
 
         else:
             create_overlay_yaml("00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
-                               {"backdrop": config.get("backdrop_ended", {}),
-                                "text": config.get("text_ended", {})})
+                               {"backdrop": config.get("backdrop_cancelled", {}),
+                                "text": config.get("text_cancelled", {})})
         
             create_collection_yaml("TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
         
         # ---- Ended Shows ----
+        if ended_shows:
+                    print(f"\n{GREEN}Seriados já Finalizados:{RESET}")
+                    for show in ended_shows:
+                        print(f"- {show['title']}")
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", ended_shows, 
                                {"backdrop": config.get("backdrop_ended", {}),
@@ -2206,7 +2194,7 @@ def main():
         returning_shows = [show for show in returning_shows if show.get('tvdbId') not in all_excluded_tvdb_ids]
         
         if returning_shows:
-            print(f"\n{GREEN}Shows that are continuing but don't have scheduled episodes:{RESET}")
+            print(f"\n{GREEN}Seriados que não foram cancelados, mas não tem data de retorno:{RESET}")
             for show in returning_shows:
                 print(f"- {show['title']}")
         
@@ -2236,7 +2224,7 @@ def main():
         minutes, seconds = divmod(remainder, 60)
         runtime_formatted = f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
         
-        print(f"Total runtime: {runtime_formatted}")
+        print(f"{BLUE}{BLUE}{'*' * 110}\n{'*' * 3}{' ' * 5}Inicio do Processo: {start_time.strftime('%H:%M:%S')}{' ' * 4}Fim do Processo: {end_time.strftime('%H:%M:%S')}{' ' * 4}Tempo Total de Execução: {runtime_formatted}{' ' * 5}{'*' * 3}\n{'*' * 110}")
 
     except ConnectionError as e:
         print(f"{RED}Error: {str(e)}{RESET}")
