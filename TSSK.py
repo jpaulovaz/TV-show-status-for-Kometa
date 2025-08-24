@@ -1523,7 +1523,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
         print(f"{LARANJA}Nenhum arquivo de overlay encontrado para concatenar.{RESET}")
         return
 
-    backdrop_count = 1
+    line_count = 1
     with open(os.path.join(base_path, output_file_name), "w", encoding="utf-8") as outfile:
         # Escreve a linha de cabeçalho 'overlays:'
         outfile.write("overlays:\n")
@@ -1543,7 +1543,14 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
                         
                         # Substitui 'backdrop:' por 'backdropX:'
                         if "backdrop:" in line:
-                            modified_line = line.replace("backdrop:", f"backdrop{backdrop_count}:")
+                            modified_line = line.replace("backdrop:", f"backdrop{line_count}:")
+                            outfile.write(modified_line)
+                        else:
+                            outfile.write(line)
+                            
+                        # Substitui 'TSSK:' por 'TSSKX:'
+                        if "TSSK" in line:
+                            modified_line = line.replace("TSSK", f"TSSK{line_count}{line[-10:]}")
                             outfile.write(modified_line)
                         else:
                             outfile.write(line)
@@ -1555,7 +1562,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
                 print(f"{VERMELHO}Erro ao processar o arquivo {file_path}: {e}{RESET}")
                 continue
             
-            backdrop_count += 1
+            line_count += 1
             
     print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
     
@@ -1762,6 +1769,8 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
                     for i, line in enumerate(lines):
                         if i == 0:
                             continue  # Pula a primeira linha
+                        
+                            outfile.write(line) # Copia linhas seguintes para o arquivo.
                             
             except FileNotFoundError:
                 print(f"{VERMELHO}Erro: O arquivo {file_path} não foi encontrado. Pulando este arquivo.{RESET}")
