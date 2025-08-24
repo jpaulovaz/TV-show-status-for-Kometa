@@ -1775,7 +1775,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
     #Deleta os arquivos originais se true no arquivo de configuração
     if delete_collections_after_all_in_one:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
-        for file_name in overlay_files:
+        for file_name in collection_files:
             file_path = os.path.join(base_path, file_name)
             try:
                 os.remove(file_path)
