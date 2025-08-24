@@ -2337,14 +2337,14 @@ def main():
             create_collection_yaml("TSSK_TV_RETORNANDO_COLLECTION.yml", returning_shows, config)
         
         #Concatenar todos os arquivos overlay em um único arquivo, para serem aplicados de uma só vez.
-        generate_all_in_one_overlays = config.get('generate_all_in_one_overlays', "false").lower() == "true"
-        delete_overlay_after_all_in_one = config.get('delete_overlay_after_all_in_one', "false").lower() == "true"
+        generate_all_in_one_overlays = str(config.get("generate_all_in_one_overlays", "false")).lower() == "true"
+        delete_overlay_after_all_in_one = str(config.get("delete_overlay_after_all_in_one", "false")).lower() == "true"
         if generate_all_in_one_overlays:
             concatenate_overlays(IS_DOCKER, overlay_path,delete_overlay_after_all_in_one)
             
         #Concatenar todos os arquivos coleção em um único arquivo, para serem aplicados de uma só vez.
-        generate_all_in_one_collections = config.get('generate_all_in_one_collections', "false").lower() == "true"
-        delete_collections_after_all_in_one = config.get('delete_collections_after_all_in_one', "false").lower() == "true"
+        generate_all_in_one_collections = str(config.get("generate_all_in_one_collections", "false")).lower() == "true"
+        delete_collections_after_all_in_one = str(config.get("delete_collections_after_all_in_one", "false")).lower() == "true"
         if generate_all_in_one_collections:
             concatenate_collections(IS_DOCKER, collection_path,delete_collections_after_all_in_one)
             
