@@ -4,6 +4,7 @@ Este é um fork de https://github.com/netplexflix/TV-show-status-for-Kometa, tod
 * Script ajustado para caracteres pt-BR;
 * Corrigido o fato do script não salvar os arquivos na pasta do Kometa quando executando em Docker;
 * Inseridos alguns scripts para filtros de situações no passado vindo do Plex.
+* A possibilidade de ativar a opção para que todos os scritps sejam salvos em um único arquivo, economizando tempo de configuração.
 * Script Traduzido para pt-BR.
 
 # 📺 Status dos Seriados para Kometa
@@ -34,10 +35,9 @@ Categorias Plex:
     * Overlay no episódio adicionado dentro de X dias passados
     * Overlay no episódio novo adicionado dentro de X dias passados
    
-A diferença entre item novo e item adicionado é a idade, pois novo se refere ao que foi ao ar recentemente, e adicionado independe de idade.
-
-
-  
+>[!TIP]
+>A diferença entre item novo e item adicionado é a idade, pois novo se refere ao que foi ao ar recentemente, e adicionado independe de idade.
+---  
 Exemplo de Overlay (você pode customizar complemente a localização, cor textos e etc):
 
 ![Image](https://github.com/user-attachments/assets/caccb1c7-4799-4b41-b133-8ae128e20a50)
@@ -187,6 +187,7 @@ TV Shows:
 > [!TIP]
 > Adicione apenas os arquivos para as catégorias que você quiser ativar. Todas são opcionais e geradas de forma independente baseado no seus arquivos de configuração.
 > Os arquivos de Overlay oferecem melhor aproveitamento se forem aplicados na sequência numérica de acordo com o numero informado no nome do arquivo.
+> Ativar as generate_all_in_one_overlays,  delete_overlay_after_all_in_one, generate_all_in_one_collections e delete_collections_after_all_in_one dirá ao script para concatenar todos os arquivos em um só, podendo este ser aplicado de uma única vez no Kometa.
 
 ### 2️⃣ Edite seu arquivos de Configuração
 ---
