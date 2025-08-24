@@ -1661,9 +1661,9 @@ def create_collection_yaml(output_file, shows, config):
 
 def main():
     if IS_DOCKER:
-        end_time = datetime.now(user_tz)
+        start_time = datetime.now(user_tz)
     else:
-        end_time = datetime.now()
+        start_time = datetime.now()
     
     print(f"\n{AZUL}{'*' * 40}\n{'*' * 14} {VERMELHO}TSSK {VERSION}{AZUL} {'*' * 14}\n{'*' * 40}{RESET}")
     print(f"\n{AZUL}Inicio do Processo: {start_time.strftime('%H:%M:%S')}\n")
