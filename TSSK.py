@@ -137,7 +137,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -150,7 +150,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -1510,7 +1510,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
         is_docker (bool): Indica se o script está sendo executado em um ambiente Docker.
         overlay_path (str): O caminho do diretório dos overlays se estiver no Docker.
     """
-    print(f"{AZUL}Iniciando a concatenação dos arquivos de overlays...{RESET}")
+    print(f"\n{AZUL}Iniciando a concatenação dos arquivos de overlays...{RESET}")
     output_file_name = "TSSK_TV_ALL_OVERLAYS_TOGETHER.yml" #Não pode terminar com OVERLAY.yml para evitar loop infito das informações.
     
     # Define o diretório de busca com base em IS_DOCKER
@@ -1543,15 +1543,12 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
                         
                         # Substitui 'backdrop:' por 'backdropX:'
                         if "backdrop:" in line:
-                            modified_line = line.replace("backdrop:", f"backdrop{line_count}:")
-                            outfile.write(modified_line)
-                        else:
-                            outfile.write(line)
-                            
-                        # Substitui 'TSSK:' por 'TSSKX:'
-                        if "TSSK" in line:
-                            modified_line = line.replace("TSSK", f"TSSK{line_count}{line[-10:]}")
-                            outfile.write(modified_line)
+                            backdrop_line = line.replace("backdrop:", f"backdrop{line_count}:")
+                            outfile.write(backdrop_line)
+                        elif "TSSK" in line:
+                            TSSK_line = line.replace("TSSK", f"TSSK{line_count}")
+                            outfile.write(TSSK_line)
+                        
                         else:
                             outfile.write(line)
                             
@@ -1564,7 +1561,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
             
             line_count += 1
             
-    print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
+    print(f"Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}\n")
     
     #Deleta os arquivos originais se true no arquivo de configuração
     if delete_overlay_after_all_in_one and generate_all_in_one_overlays:
@@ -1740,7 +1737,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
         is_docker (bool): Indica se o script está sendo executado em um ambiente Docker.
         collection_path (str): O caminho do diretório dos collection se estiver no Docker.
     """
-    print(f"{AZUL}Iniciando a concatenação dos arquivos de coleção...{RESET}")
+    print(f"\n{AZUL}Iniciando a concatenação dos arquivos de coleção...{RESET}")
     output_file_name = "TSSK_ALL_COLLECTIONS_TOGETHER.yml" #Não pode terminar com collection.yml para evitar loop infito das informações.
     
     # Define o diretório de busca com base em IS_DOCKER
@@ -1769,7 +1766,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
                     for i, line in enumerate(lines):
                         if i == 0:
                             continue  # Pula a primeira linha
-                        
+                        else:
                             outfile.write(line) # Copia linhas seguintes para o arquivo. 
                             
             except FileNotFoundError:
@@ -1779,7 +1776,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
                 print(f"{VERMELHO}Erro ao processar o arquivo {file_path}: {e}{RESET}")
                 continue
           
-    print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
+    print(f"Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}\n")
     
     #Deleta os arquivos originais se true no arquivo de configuração
     if delete_collections_after_all_in_one and generate_all_in_one_collections:
@@ -2212,10 +2209,10 @@ def main():
             sonarr_url, sonarr_api_key, future_days_upcoming_finale, utc_offset, skip_unmonitored
         )
         
-        # Filter out shows that are in the season finale or final episode categories
+        # Filtrar os programas que estão no final da temporada ou em categorias de episódios finais
         finale_eps = [show for show in finale_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
         
-        # Add to excluded IDs for returning category
+        # Adicionar aos IDs excluídos para a categoria de retorno
         for show in finale_eps:
             if show.get('tvdbId'):
                 all_included_tvdb_ids.add(show['tvdbId'])
@@ -2248,12 +2245,12 @@ def main():
                 print(f"- {show['title']} (Temporada {show['seasonNumber']}) vai ao ar em {show['airDate']}")        
         
         # ---- Ended Shows ----
-        # The find_ended_shows function doesn't have a skip_unmonitored parameter
-        # as it's based on show status rather than monitoring status
+        # A função find_end_shows não possui um parâmetro skip_unmonitored
+        # como é baseado no status do show, em vez de monitorar o status
         ended_shows, cancelled_shows = find_ended_shows(
             sonarr_url, sonarr_api_key, tmdb_api_key
         )
-        # Filter out shows that are in the season finale or final episode categories
+        # Filtrar os programas que estão no final da temporada ou em categorias de episódios finais
         ended_shows = [
             show
             for show in ended_shows
@@ -2370,8 +2367,9 @@ def main():
         minutes, seconds = divmod(remainder, 60)
         runtime_formatted = f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
         
-        print(f"{AZUL}{AZUL}{'*' * 110}\n{'*' * 3}{' ' * 5}Inicio do Processo: {start_time.strftime('%H:%M:%S')}{' ' * 4}Fim do Processo: {end_time.strftime('%H:%M:%S')}{' ' * 4}Tempo Total de Execução: {runtime_formatted}{' ' * 5}{'*' * 3}\n{'*' * 110}")
-
+        print(f"{AZUL}{AZUL}{'*' * 110}\n{'*' * 3}{' ' * 5}Inicio do Processo: {start_time.strftime('%H:%M:%S')}{' ' * 4}Fim do Processo: {end_time.strftime('%H:%M:%S')}{' ' * 4}Tempo Total de Execução: {runtime_formatted}{' ' * 5}{'*' * 3}\n{'*' * 110}{RESET}")
+        print("")
+        
     except ConnectionError as e:
         print(f"{VERMELHO}Error: {str(e)}{RESET}")
         sys.exit(1)
