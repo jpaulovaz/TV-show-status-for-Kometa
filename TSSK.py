@@ -1737,7 +1737,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
     output_file_name = "TSSK_ALL_COLLECTIONS_TOGETHER.yml" #Não pode terminar com collection.yml para evitar loop infito das informações.
     
     # Define o diretório de busca com base em IS_DOCKER
-    base_path = overlay_path if is_docker else "."
+    base_path = collection_path if is_docker else "."
 
     # Encontra todos os arquivos .yml de overlays e os ordena numericamente
     collection_files = sorted([f for f in os.listdir(base_path) if f.endswith('_COLLECTION.yml')])
