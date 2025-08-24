@@ -1730,7 +1730,7 @@ def create_collection_yaml(output_file, shows, config):
         yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False, allow_unicode=True)
 
 def concatenate_collections(is_docker, collection_path="",delete_collections_after_all_in_one=False,generate_all_in_one_collections=False):
-    """
+    """ 
     Combina arquivos YML de coleção em um único arquivo chamado TSSK_ALL_COLLECTIONS_TOGETHER.yml.
 
     Args:
