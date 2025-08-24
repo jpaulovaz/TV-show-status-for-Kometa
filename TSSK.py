@@ -1560,7 +1560,7 @@ def concatenate_overlays(is_docker, overlay_path=""):
     print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
     
     #Deleta os arquivos originais se true no arquivo de configuração
-    delete_overlay_after_all_in_one = config.get('delete_overlay_after_all_in_one', "false").lower() == "true"
+    delete_overlay_after_all_in_one = config.get('delete_overlay_after_all_in_one', "false")
     if delete_overlay_after_all_in_one:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
         for file_name in overlay_files:
@@ -1774,7 +1774,7 @@ def concatenate_collections(is_docker, collection_path=""):
     print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
     
     #Deleta os arquivos originais se true no arquivo de configuração
-    delete_collections_after_all_in_one = config.get('delete_collections_after_all_in_one', "false").lower() == "true"
+    delete_collections_after_all_in_one = config.get('delete_collections_after_all_in_one', "false")
     if delete_collections_after_all_in_one:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
         for file_name in overlay_files:
