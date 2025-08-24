@@ -1,6 +1,7 @@
 import requests
 import yaml
 from datetime import datetime, timedelta, timezone
+import pytz
 from collections import defaultdict
 import sys
 if sys.version_info >= (3, 7):
@@ -15,25 +16,28 @@ IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 VERSION = "2.0.0"
 
 # ANSI color codes
-GREEN = '\033[32m'
-ORANGE = '\033[33m'
-BLUE = '\033[34m'
-RED = '\033[31m'
+VERDE = '\033[32m'
+LARANJA = '\033[33m'
+AZUL = '\033[34m'
+VERMELHO = '\033[31m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
 
+#Exibe as informações das variaveis DOCKER, se docker.
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
     puid = int(os.getenv("PUID", "1000"))
     pgid = int(os.getenv("PGID", "1000"))
+    TZ = os.getenv("TZ", "America/Sao_Paulo").upper()
+    user_tz = pytz.timezone(TZ)
     overlay_path = "/app/config/kometa/tssk/"
     collection_path = "/app/config/kometa/tssk/"
-    print(f"{BLUE}DOCKER {IS_DOCKER}")
-    print(f"{BLUE}PUID {puid}")
-    print(f"{BLUE}PGID {pgid}")
+    print(f"{AZUL}{'*' * 40}\nDOCKER: {VERMELHO}{IS_DOCKER}")
+    print(f"{AZUL}PUID: {VERMELHO}{puid}")
+    print(f"{AZUL}PGID: {VERMELHO}{pgid}{AZUL}\n{'*' * 40}\n{RESET}")
 
 def check_for_updates():
-    print(f"Verificando atualizações para TSSK {VERSION}...")
+    print(f"{VERDE}Verificando atualizações para TSSK {VERSION}...")
     
     try:
         response = requests.get(
@@ -52,13 +56,13 @@ def check_for_updates():
         latest_version_tuple = parse_version(latest_version)
         
         if latest_version and latest_version_tuple > current_version_tuple:
-            print(f"{ORANGE}Uma versão mais recente do TSSK está disponível: {latest_version}{RESET}")
-            print(f"{ORANGE}Download: {latest_release.get('html_url', '')}{RESET}")
-            print(f"{ORANGE}Notas da Release: {latest_release.get('body', 'Nenhuma notas de lançamento disponíveis')}{RESET}\n")
+            print(f"{LARANJA}Uma versão mais recente do TSSK está disponível: {latest_version}{RESET}")
+            print(f"{LARANJA}Download: {latest_release.get('html_url', '')}{RESET}")
+            print(f"{LARANJA}Notas da Release: {latest_release.get('body', 'Nenhuma notas de lançamento disponíveis')}{RESET}\n")
         else:
-            print(f"{GREEN}Você está executando a versão mais recente do Tssk.{RESET}\n")
+            print(f"{VERDE}Você está executando a versão mais recente do Tssk.{RESET}\n")
     except Exception as e:
-        print(f"{ORANGE}Não foi possível verificar se há atualizações: {str(e)}{RESET}\n")
+        print(f"{LARANJA}Não foi possível verificar se há atualizações: {str(e)}{RESET}\n")
 
 def get_config_section(config, primary_key, fallback_keys=None):
     if fallback_keys is None:
@@ -119,10 +123,10 @@ def process_sonarr_url(base_url, api_key):
                 print(f"Conectado com sucesso a Sonarr em: {test_url}")
                 return test_url
         except requests.exceptions.RequestException as e:
-            print(f"{ORANGE}URL de teste {test_url} - Falha: {str(e)}{RESET}")
+            print(f"{LARANJA}URL de teste {test_url} - Falha: {str(e)}{RESET}")
             continue
     
-    raise ConnectionError(f"{RED}Incapaz de estabelecer conexão com Sonarr. Tentei os seguintes URLs:\n" + 
+    raise ConnectionError(f"{VERMELHO}Incapaz de estabelecer conexão com Sonarr. Tentei os seguintes URLs:\n" + 
                         "\n".join([f"- {base_url}{path}" for path in api_paths]) + 
                         f"\nVerifique sua chave de URL e API e verifique se SONARR está ssendo executado.{RESET}")
 def get_tmdb_status(tvdb_id, tmdb_api_key):
@@ -133,7 +137,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -146,13 +150,13 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
         return info.get("status")
     except Exception as e:
-        print(f"{ORANGE}Failed to fetch TMDB status for {tvdb_id}: {e}{RESET}")
+        print(f"{LARANJA}Erro ao verificar o statudo TMDB para {tvdb_id}: {e}{RESET}")
         return None
 
 def get_sonarr_series(sonarr_url, api_key):
@@ -163,7 +167,7 @@ def get_sonarr_series(sonarr_url, api_key):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"{RED}Erro se conectando ao SONARR: {str(e)}{RESET}")
+        print(f"{VERMELHO}Erro ao se conectar com o SONARR: {str(e)}{RESET}")
         sys.exit(1)
 
 def get_sonarr_episodes(sonarr_url, api_key, series_id):
@@ -174,7 +178,7 @@ def get_sonarr_episodes(sonarr_url, api_key, series_id):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"{RED}Erro a busca de episódios de Sonarr: {str(e)}{RESET}")
+        print(f"{VERMELHO}Erro a busca de episódios de Sonarr: {str(e)}{RESET}")
         sys.exit(1)
 
 def find_new_season_shows(sonarr_url, api_key, future_days_new_season, utc_offset=0, skip_unmonitored=False):
@@ -874,7 +878,7 @@ def format_date(dd_mm_yyyy, date_format, capitalize=False):
             result = result.upper()
         return result
     except ValueError as e:
-        print(f"{RED}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
+        print(f"{VERMELHO}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
         return dd_mm_yyyy
     
     try:
@@ -883,7 +887,7 @@ def format_date(dd_mm_yyyy, date_format, capitalize=False):
             result = result.upper()
         return result
     except ValueError as e:
-        print(f"{RED}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
+        print(f"{VERMELHO}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
         return dd_mm_yyyy  # Return original format as fallback
 
 def create_overlay_yaml(output_file, shows, config_sections):
@@ -1656,9 +1660,13 @@ def create_collection_yaml(output_file, shows, config):
 
 
 def main():
-    start_time = datetime.now()
-    print(f"{BLUE}{'*' * 40}\n{'*' * 15} TSSK {VERSION} {'*' * 15}\n{'*' * 40}{RESET}")
-    print(f"\n{BLUE}Inicio do Processo: {start_time.strftime('%H:%M:%S')}\n")
+    if IS_DOCKER:
+        end_time = datetime.now(user_tz)
+    else:
+        end_time = datetime.now()
+    
+    print(f"\n{AZUL}{'*' * 40}\n{'*' * 14} {VERMELHO}TSSK {VERSION}{AZUL} {'*' * 14}\n{'*' * 40}{RESET}")
+    print(f"\n{AZUL}Inicio do Processo: {start_time.strftime('%H:%M:%S')}\n")
     check_for_updates()
 
     config = load_config('config/config.yml')
@@ -1728,7 +1736,7 @@ def main():
                 all_excluded_tvdb_ids.add(show['tvdbId'])
         
         if season_finale_shows:
-            print(f"{GREEN}Seriados com um final de temporada que foi ao ar nos últimos {recent_days_season_finale} dias:{RESET}")
+            print(f"{VERDE}Seriados com um final de temporada que foi ao ar nos últimos {recent_days_season_finale} dias:{RESET}")
             for show in season_finale_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
@@ -1760,7 +1768,7 @@ def main():
                 all_excluded_tvdb_ids.add(show['tvdbId'])
         
         if final_episode_shows:
-            print(f"\n{GREEN}Seriados com um episódio final que foi ao ar nos últimos {recent_days_final_episode} dias:{RESET}")
+            print(f"\n{VERDE}Seriados com um episódio final que foi ao ar nos últimos {recent_days_final_episode} dias:{RESET}")
             for show in final_episode_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
@@ -1800,11 +1808,11 @@ def main():
                 all_included_tvdb_ids.add(show['tvdbId'])
         
         if matched_shows:
-            print(f"\n{GREEN}Seriados com uma nova temporada começando dentro de  {future_days_new_season} dias:{RESET}")
+            print(f"\n{VERDE}Seriados com uma nova temporada começando dentro de  {future_days_new_season} dias:{RESET}")
             for show in matched_shows:
                 print(f"- {show['title']} (Temporada {show['seasonNumber']}) vai ao ar em {show['airDate']}")
         else:
-            print(f"\n{RED}Nenhum show com novas estações começando dentro de {future_days_new_season} dias.{RESET}")
+            print(f"\n{VERMELHO}Nenhum show com novas estações começando dentro de {future_days_new_season} dias.{RESET}")
         
         # Create YAMLs for new seasons
         
@@ -1836,7 +1844,7 @@ def main():
                 all_excluded_tvdb_ids.add(show['tvdbId'])
         
         if new_season_started_shows:
-            print(f"\n{GREEN}Seriados com uma nova temporada que começou no passado {recent_days_new_season_started} dias:{RESET}")
+            print(f"\n{VERDE}Seriados com uma nova temporada que começou no passado {recent_days_new_season_started} dias:{RESET}")
             for show in new_season_started_shows:
                 print(f"- {show['title']} (Temporada {show['seasonNumber']}) started on {show['airDate']}")
         
@@ -1873,7 +1881,7 @@ def main():
                                         "text": get_config_section(config, "text_new_episode_added")}, 
                                        recent_days_new_episode_added)
 
-        print(f"\n{GREEN}Nova Overlay Criada para série Que Tiveram um episódio adicionado recentemente em até {recent_days_new_episode_added} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay Criada para série Que Tiveram um episódio adicionado recentemente em até {recent_days_new_episode_added} dias{RESET}")
 
         # ---- Fresh New Episode Added ----
         if IS_DOCKER:
@@ -1891,7 +1899,7 @@ def main():
                                         "text": get_config_section(config, "text_recent_new_episode_added")}, 
                                        recent_days_fresh_espisode_added)
 
-        print(f"\n{GREEN}Nova Overlay criada para series que tiveram um episódio Atual adicionado recentemente em até {recent_days_fresh_espisode_added} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado recentemente em até {recent_days_fresh_espisode_added} dias{RESET}")
        
         # ---- Fresh New Season Added ----
         if IS_DOCKER:
@@ -1909,7 +1917,7 @@ def main():
                                         "text": get_config_section(config, "text_new_season_added")}, 
                                        recent_days_new_season_added)
 
-        print(f"\n{GREEN}Nova Overlay criada para series que tiveram um episódio Atual adicionado a temporada recentemente em até {recent_days_new_season_added} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado a temporada recentemente em até {recent_days_new_season_added} dias{RESET}")
 
        # ---- New Show ----
         if IS_DOCKER:
@@ -1927,7 +1935,7 @@ def main():
                                         "text": get_config_section(config, "text_new_show")}, 
                                        recent_days_new_show)
 
-        print(f"\n{GREEN}Nova Overlay de show criada para shows adicionados {recent_days_new_show} passados{RESET}")
+        print(f"\n{VERDE}Nova Overlay de show criada para shows adicionados {recent_days_new_show} passados{RESET}")
 
        # ---- Added Episode Season - Season depth ----
         if IS_DOCKER:
@@ -1945,7 +1953,7 @@ def main():
                                         "text": get_config_section(config, "text_episode_season")}, 
                                        recent_days_episode_on_season)
  
-        print(f"\n{GREEN}Nova Overlay para temporada com episódio adicionado nos últimos {recent_days_episode_on_season} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay para temporada com episódio adicionado nos últimos {recent_days_episode_on_season} dias{RESET}")
 
        # ---- Added New Episode Season - Season depth ----
         if IS_DOCKER:
@@ -1963,7 +1971,7 @@ def main():
                                         "text": get_config_section(config, "text_new_episode_season")}, 
                                        recent_days_new_episode_on_season)
  
-        print(f"\n{GREEN}Nova Overlay para temporada com episódio Novo adicionadonos últimos {recent_days_new_episode_on_season} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay para temporada com episódio Novo adicionadonos últimos {recent_days_new_episode_on_season} dias{RESET}")
         
                # ---- Added Season - Season depth ----
         if IS_DOCKER:
@@ -1981,7 +1989,7 @@ def main():
                                         "text": get_config_section(config, "text_season_added")}, 
                                        recent_days_season_added)
  
-        print(f"\n{GREEN}Nova Overlay para temporada adicionada nos últimos {recent_days_season_added} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay para temporada adicionada nos últimos {recent_days_season_added} dias{RESET}")
 
                # ---- Temporada Recém-Lancada - Season depth ----
         if IS_DOCKER:
@@ -1999,7 +2007,7 @@ def main():
                                         "text": get_config_section(config, "text_new_season_released")}, 
                                        recent_days_new_season_released)
  
-        print(f"\n{GREEN}Nova Overlay para Nova temporada adicionada nos últimos {recent_days_new_season_released} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay para Nova temporada adicionada nos últimos {recent_days_new_season_released} dias{RESET}")
         
         
                        # ---- Episódio Recém-Adicionado - Episode depth ----
@@ -2018,7 +2026,7 @@ def main():
                                         "text": get_config_section(config, "text_episode_added")}, 
                                        recent_days_episode_added)
  
-        print(f"\n{GREEN}Nova Overlay para Episódio adicionado nos últimos {recent_days_episode_added} dias{RESET}")
+        print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_episode_added} dias{RESET}")
 
                        # ---- Episódio Recém-Lançado - Episode depth ----
         if IS_DOCKER:
@@ -2036,7 +2044,7 @@ def main():
                                         "text": get_config_section(config, "text_new_episode_released")}, 
                                        recent_days_new_episode_released)
  
-        print(f"\n{GREEN}Nova Overlay para Episódio adicionado nos últimos {recent_days_new_episode_released} days{RESET}")        
+        print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_new_episode_released} days{RESET}")        
         
         # ---- Upcoming Non-Finale Episodes ----
         upcoming_eps, skipped_eps = find_upcoming_regular_episodes(
@@ -2052,7 +2060,7 @@ def main():
                 all_included_tvdb_ids.add(show['tvdbId'])
         
         if upcoming_eps:
-            print(f"\n{GREEN}Seriados com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
+            print(f"\n{VERDE}Seriados com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
             for show in upcoming_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
         
@@ -2089,7 +2097,7 @@ def main():
                 all_included_tvdb_ids.add(show['tvdbId'])
         
         if finale_eps:
-            print(f"\n{GREEN}Seriados com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
+            print(f"\n{VERDE}Seriados com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
             for show in finale_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
         
@@ -2111,7 +2119,7 @@ def main():
         
         # ---- skipped Shows ----
         if skipped_shows:
-            print(f"\n{ORANGE}Seriados (não monitorados ou novos shows):{RESET}")
+            print(f"\n{LARANJA}Seriados (não monitorados ou novos shows):{RESET}")
             for show in skipped_shows:
                 print(f"- {show['title']} (Temporada {show['seasonNumber']}) vai ao ar em {show['airDate']}")        
         
@@ -2144,7 +2152,7 @@ def main():
 
         # ---- Cancelled Shows ----
         if cancelled_shows:
-                    print(f"\n{GREEN}Seriados que foram Cancelados:{RESET}")
+                    print(f"\n{VERDE}Seriados que foram Cancelados:{RESET}")
                     for show in cancelled_shows:
                         print(f"- {show['title']}")
                         
@@ -2167,7 +2175,7 @@ def main():
         
         # ---- Ended Shows ----
         if ended_shows:
-                    print(f"\n{GREEN}Seriados já Finalizados:{RESET}")
+                    print(f"\n{VERDE}Seriados já Finalizados:{RESET}")
                     for show in ended_shows:
                         print(f"- {show['title']}")
         if IS_DOCKER:
@@ -2193,7 +2201,7 @@ def main():
         returning_shows = [show for show in returning_shows if show.get('tvdbId') not in all_excluded_tvdb_ids]
         
         if returning_shows:
-            print(f"\n{GREEN}Seriados que não foram cancelados, mas não tem data de retorno:{RESET}")
+            print(f"\n{VERDE}Seriados que não foram cancelados, mas não tem data de retorno:{RESET}")
             for show in returning_shows:
                 print(f"- {show['title']}")
         
@@ -2216,20 +2224,24 @@ def main():
 
         print(f"\nTodos os arquivos YAML criados com sucesso")
 
-        # Calculate and display runtime
-        end_time = datetime.now()
+        # Calcular e mostrar o tempo de execução - Considerando se docker a varialvel configurada.
+        if IS_DOCKER:
+            start_time = datetime.now(user_tz)
+        else:
+            start_time = datetime.now()
+                
         runtime = end_time - start_time
         hours, remainder = divmod(runtime.total_seconds(), 3600)
         minutes, seconds = divmod(remainder, 60)
         runtime_formatted = f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
         
-        print(f"{BLUE}{BLUE}{'*' * 110}\n{'*' * 3}{' ' * 5}Inicio do Processo: {start_time.strftime('%H:%M:%S')}{' ' * 4}Fim do Processo: {end_time.strftime('%H:%M:%S')}{' ' * 4}Tempo Total de Execução: {runtime_formatted}{' ' * 5}{'*' * 3}\n{'*' * 110}")
+        print(f"{AZUL}{AZUL}{'*' * 110}\n{'*' * 3}{' ' * 5}Inicio do Processo: {start_time.strftime('%H:%M:%S')}{' ' * 4}Fim do Processo: {end_time.strftime('%H:%M:%S')}{' ' * 4}Tempo Total de Execução: {runtime_formatted}{' ' * 5}{'*' * 3}\n{'*' * 110}")
 
     except ConnectionError as e:
-        print(f"{RED}Error: {str(e)}{RESET}")
+        print(f"{VERMELHO}Error: {str(e)}{RESET}")
         sys.exit(1)
     except Exception as e:
-        print(f"{RED}Unexpected error: {str(e)}{RESET}")
+        print(f"{VERMELHO}Unexpected error: {str(e)}{RESET}")
         sys.exit(1)
 
 if __name__ == "__main__":
