@@ -1770,7 +1770,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
                         if i == 0:
                             continue  # Pula a primeira linha
                         
-                            outfile.write(line) # Copia linhas seguintes para o arquivo.
+                            outfile.write(line) # Copia linhas seguintes para o arquivo. 
                             
             except FileNotFoundError:
                 print(f"{VERMELHO}Erro: O arquivo {file_path} não foi encontrado. Pulando este arquivo.{RESET}")
