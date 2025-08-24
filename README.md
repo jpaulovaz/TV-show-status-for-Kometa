@@ -186,7 +186,9 @@ TV Shows:
 
 > [!TIP]
 > Adicione apenas os arquivos para as catégorias que você quiser ativar. Todas são opcionais e geradas de forma independente baseado no seus arquivos de configuração.
+> 
 > Os arquivos de Overlay oferecem melhor aproveitamento se forem aplicados na sequência numérica de acordo com o numero informado no nome do arquivo.
+> 
 > Ativar as generate_all_in_one_overlays,  delete_overlay_after_all_in_one, generate_all_in_one_collections e delete_collections_after_all_in_one dirá ao script para concatenar todos os arquivos em um só, podendo este ser aplicado de uma única vez no Kometa.
 
 ### 2️⃣ Edite seu arquivos de Configuração
