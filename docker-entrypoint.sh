@@ -25,7 +25,7 @@ echo "$CRON source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>
 
 chmod 0644 /etc/cron.d/tssk-cron
 crontab /etc/cron.d/tssk-cron
-echo "TSSK is starting with the following cron schedule: $CRON"
+echo "O TSSK está sendo iniciado com a seguinte programação cron : $CRON"
 
 touch /var/log/cron.log
 cron
