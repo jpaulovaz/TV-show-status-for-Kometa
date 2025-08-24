@@ -2,6 +2,12 @@ sonarr_url: 'http://192.168.0.1:8989'
 sonarr_api_key: 'seu_api_sonarr'
 
 skip_unmonitored: false #Ajuste para falso se quiser monitorar também o que não está sendo monitorado pelo Sonarr
+
+#Gerar arquivos únicos de coleção e overlay, útil se deseja utilizar todos de uma vez.
+generate_all_in_one_overlays: false # marque true para habilitar a geração de arquivo único para overlay.
+delete_overlay_after_all_in_one: false # marque false para deletar arquivos base apos concatenar os originais.
+generate_all_in_one_collections: false # marque true para habilitar a geração de arquivo único para coleção
+delete_collections_after_all_in_one: false # marque false para deletar arquivos base apos concatenar os originais.
 utc_offset: +0
 
 ################################################################################
@@ -96,8 +102,6 @@ backdrop_upcoming_episode:
   vertical_align: bottom
   vertical_offset: 0
   
-
-
 text_upcoming_episode:
   date_format: "ddd dd/mm"
   capitalize_dates: true
@@ -133,7 +137,6 @@ backdrop_upcoming_finale:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_upcoming_finale:
   date_format: "ddd dd/mm"      # e.g., "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   capitalize_dates: true
@@ -146,6 +149,37 @@ text_upcoming_finale:
   font_color: "#FFFFFF" #BRANCO
   #font: Ajuste com a fonte dessejada.
 
+################################################################################
+##########                           CANCELADOS:                      ##########
+################################################################################
+#Arquivo: 00_TSSK_TV_CANCELADOS_OVERLAYS.yml
+
+collection_cancelled:
+  collection_name: "Seriados Cancelados"
+  smart_label: title.desc
+  sort_title: "+1_2Seriados Cancelados"
+  ignore_blank_results: true
+
+backdrop_cancelled:
+  enable: true
+  back_color: "#000000" #PRETO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+
+text_cancelled:
+  use_text: "SERIADO CANCELADO"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#00ff3d" #VERDE
+  #font: Ajuste com a fonte dessejada.
+  
 ################################################################################
 ##########                           FINALIZADO:                      ##########
 ################################################################################
@@ -167,9 +201,8 @@ backdrop_ended:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_ended:
-  use_text: "F I N A L I Z A D O"
+  use_text: "SERIADO FINALIZADO"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
@@ -199,9 +232,8 @@ backdrop_returning:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_returning:
-  use_text: "R E T O R N A N D O"
+  use_text: "EM BREVE NOVOS EPISÓDIOS"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
@@ -231,7 +263,6 @@ backdrop_season_finale:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
 
 text_season_finale:
   use_text: "FINAL DE TEMPORADA"
@@ -264,7 +295,6 @@ backdrop_final_episode:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
 
 text_final_episode:
   use_text: "EPISÓDIO FINAL"
@@ -299,7 +329,6 @@ backdrop_new_episode_added:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_new_episode_added:
   use_text: "NOVOS EPISÓDIOS"
   horizontal_align: center
@@ -327,7 +356,6 @@ backdrop_recent_new_episode_added:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
 
 text_recent_new_episode_added:
   use_text: "EPISÓDIO NOVO"
@@ -357,7 +385,6 @@ backdrop_new_season_added:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_new_season_added:
   use_text: "TEMPORADA ATUALIZADA"
   horizontal_align: center
@@ -384,7 +411,6 @@ backdrop_new_show:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
 
 text_new_show:
   use_text: "ADICIONADO RECENTEMENTE"
@@ -416,7 +442,6 @@ backdrop_episode_season:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_episode_season:
   use_text: "NOVOS EPISÓDIOS"
   horizontal_align: center
@@ -444,7 +469,6 @@ backdrop_new_episode_season:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
 
 text_new_episode_season:
   use_text: "EPISÓDIO NOVO"
@@ -474,7 +498,6 @@ backdrop_season_added:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_season_added:
   use_text: "ADICIONADA RECENTEMENTE"
   horizontal_align: center
@@ -500,7 +523,6 @@ backdrop_new_season_released:
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
 
 text_new_season_released:
   use_text: "NOVA TEMPORADA"
@@ -532,7 +554,6 @@ backdrop_episode_added:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_episode_added:
   use_text: "ADICIONADO RECENTEMENTE"
   horizontal_align: center
@@ -561,7 +582,6 @@ backdrop_new_episode_released:
   vertical_align: bottom
   vertical_offset: 0
 
-
 text_new_episode_released:
   use_text: "EPISÓDIO NOVO"
   horizontal_align: center
@@ -570,5 +590,4 @@ text_new_episode_released:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
-
+#font: Ajuste com a fonte dessejada

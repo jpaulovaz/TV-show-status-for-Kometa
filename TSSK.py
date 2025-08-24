@@ -13,6 +13,8 @@ print = functools.partial(print, flush=True)
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
+overlay_path = "/app/config/kometa/tssk/" #Só usada se docker true
+collection_path = "/app/config/kometa/tssk/" #Só usada se docker true
 VERSION = "2.0.0"
 
 # ANSI color codes
@@ -30,8 +32,6 @@ if IS_DOCKER:
     pgid = int(os.getenv("PGID", "1000"))
     TZ = os.getenv("TZ", "America/Sao_Paulo").upper()
     user_tz = pytz.timezone(TZ)
-    overlay_path = "/app/config/kometa/tssk/"
-    collection_path = "/app/config/kometa/tssk/"
     print(f"{AZUL}{'*' * 40}\nDOCKER: {VERMELHO}{IS_DOCKER}")
     print(f"{AZUL}PUID: {VERMELHO}{puid}")
     print(f"{AZUL}PGID: {VERMELHO}{pgid}{AZUL}\n{'*' * 40}\n{RESET}")
@@ -137,7 +137,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -150,7 +150,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -1502,6 +1502,74 @@ def create_new_episode_released_overlay_yaml(output_file, config_sections, recen
         yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 ##############################END PLEX BASED CONFIG##############################
 
+def concatenate_overlays(is_docker, overlay_path=""):
+    """
+    Combina arquivos YML de overlays em um único arquivo chamado TSSK_TV_ALL_OVERLAYS_TOGETHER.yml.
+
+    Args:
+        is_docker (bool): Indica se o script está sendo executado em um ambiente Docker.
+        overlay_path (str): O caminho do diretório dos overlays se estiver no Docker.
+    """
+    print(f"{AZUL}Iniciando a concatenação dos arquivos de overlays...{RESET}")
+    output_file_name = "TSSK_TV_ALL_OVERLAYS_TOGETHER.yml" #Não pode terminar com OVERLAY.yml para evitar loop infito das informações.
+    
+    # Define o diretório de busca com base em IS_DOCKER
+    base_path = overlay_path if is_docker else "."
+
+    # Encontra todos os arquivos .yml de overlays e os ordena numericamente
+    overlay_files = sorted([f for f in os.listdir(base_path) if f.endswith('_OVERLAYS.yml')])
+    
+    if not overlay_files:
+        print(f"{LARANJA}Nenhum arquivo de overlay encontrado para concatenar.{RESET}")
+        return
+
+    backdrop_count = 1
+    with open(os.path.join(base_path, output_file_name), "w", encoding="utf-8") as outfile:
+        # Escreve a linha de cabeçalho 'overlays:'
+        outfile.write("overlays:\n")
+        
+        for file_name in overlay_files:
+            file_path = os.path.join(base_path, file_name)
+            try:
+                print(f"{VERDE}Processando {file_path} ...{RESET}")
+                with open(file_path, "r", encoding="utf-8") as infile:
+                    # Lê todas as linhas do arquivo de entrada
+                    lines = infile.readlines()
+                 
+                    # Ignora a primeira linha ('overlays:') e processa o restante
+                    for i, line in enumerate(lines):
+                        if i == 0:
+                            continue  # Pula a primeira linha
+                        
+                        # Substitui 'backdrop:' por 'backdropX:'
+                        if "backdrop:" in line:
+                            modified_line = line.replace("backdrop:", f"backdrop{backdrop_count}:")
+                            outfile.write(modified_line)
+                        else:
+                            outfile.write(line)
+                            
+            except FileNotFoundError:
+                print(f"{VERMELHO}Erro: O arquivo {file_path} não foi encontrado. Pulando este arquivo.{RESET}")
+                continue
+            except Exception as e:
+                print(f"{VERMELHO}Erro ao processar o arquivo {file_path}: {e}{RESET}")
+                continue
+            
+            backdrop_count += 1
+            
+    print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
+    
+    #Deleta os arquivos originais se true no arquivo de configuração
+    delete_overlay_after_all_in_one = config.get('delete_overlay_after_all_in_one', "false").lower() == "true"
+    if delete_overlay_after_all_in_one:
+        print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
+        for file_name in overlay_files:
+            file_path = os.path.join(base_path, file_name)
+            try:
+                os.remove(file_path)
+                print(f"{VERDE}Arquivo {file_name} deletado com sucesso.{RESET}")
+            except OSError as e:
+                print(f"{VERMELHO}Erro ao tentar deletar o arquivo {file_name}: {e}{RESET}")
 
 def create_collection_yaml(output_file, shows, config):
     import yaml
@@ -1520,31 +1588,31 @@ def create_collection_yaml(output_file, shows, config):
     collection_name = ""
     
     if "FIM_TEMPORADA" in output_file:
-        config_key = "colecao_fim_temporada"
+        config_key = "collection_season_finale"
         summary = f"Seriados com um final de temporada que foi ao ar nós últimos {config.get('recent_days_season_finale', 21)} dias"
     elif "EPISODIO_FINAL" in output_file:
-        config_key = "colecao_episodio_final"
+        config_key = "collection_final_episode"
         summary = f"Seriados com um episódio final que foi ao ar nós últimos {config.get('recent_days_final_episode', 21)} dias"
     elif "NOVA_TEMPORADA_INICIADA" in output_file:
-        config_key = "colecao_nova_temporada_iniciada"
+        config_key = "collection_new_season_started"
         summary = f"Seriados com uma nova temporada que começou no passado {config.get('recent_days_new_season_started', 14)} days"
     elif "NOVA_TEMPORADA" in output_file:
-        config_key = "colecao_nova_temporada"
+        config_key = "collection_new_season"
         summary = f"Seriados com uma nova temporada começando dentro {config.get('future_days_new_season', 31)} days"
     elif "PROXIMOS_EPISODIOS" in output_file:
-        config_key = "colecao_proximos_episodios"
+        config_key = "collection_upcoming_episode"
         summary = f"Seriados com um próximo episódio dentro {config.get('future_days_upcoming_episode', 31)} days"
     elif "PROXIMOS_FINAIS" in output_file:
-        config_key = "colecao_procimos_finais"
+        config_key = "collection_upcoming_finale"
         summary = f"Seriados com um final de temporada dentro de {config.get('future_days_upcoming_finale', 31)} days"
     elif "FINALIZADOS" in output_file:
-        config_key = "colecao_finalizados"
+        config_key = "collection_ended"
         summary = "Seriados que já foram Finalizados."
     elif "CANCELADOS" in output_file:
-        config_key = "colecao_cancelados"
+        config_key = "collection_cancelled"
         summary = "Seriados que foram cancelados."
     elif "RETORNANDO" in output_file:
-        config_key = "colecao_seriados_que_retornarao"
+        config_key = "collection_returning"
         summary = "Seriados que tiveram seu retorno confirmado"
     else:
         # Default fallback
@@ -1658,7 +1726,66 @@ def create_collection_yaml(output_file, shows, config):
         # Use SafeDumper so our custom representer is used
         yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False, allow_unicode=True)
 
+def concatenate_collections(is_docker, collection_path=""):
+    """
+    Combina arquivos YML de coleção em um único arquivo chamado TSSK_ALL_COLLECTIONS_TOGETHER.yml.
 
+    Args:
+        is_docker (bool): Indica se o script está sendo executado em um ambiente Docker.
+        collection_path (str): O caminho do diretório dos collection se estiver no Docker.
+    """
+    print(f"{AZUL}Iniciando a concatenação dos arquivos de coleção...{RESET}")
+    output_file_name = "TSSK_ALL_COLLECTIONS_TOGETHER.yml" #Não pode terminar com collection.yml para evitar loop infito das informações.
+    
+    # Define o diretório de busca com base em IS_DOCKER
+    base_path = overlay_path if is_docker else "."
+
+    # Encontra todos os arquivos .yml de overlays e os ordena numericamente
+    collection_files = sorted([f for f in os.listdir(base_path) if f.endswith('_COLLECTION.yml')])
+    
+    if not collection_files:
+        print(f"{LARANJA}Nenhum arquivo de coleção encontrado para concatenar.{RESET}")
+        return
+
+    with open(os.path.join(base_path, output_file_name), "w", encoding="utf-8") as outfile:
+        # Escreve a linha de cabeçalho 'collections:'
+        outfile.write("collections:\n")
+        
+        for file_name in collection_files:
+            file_path = os.path.join(base_path, file_name)
+            try:
+                print(f"{VERDE}Processando {file_path} ...{RESET}")
+                with open(file_path, "r", encoding="utf-8") as infile:
+                    # Lê todas as linhas do arquivo de entrada
+                    lines = infile.readlines()
+                 
+                    # Ignora a primeira linha ('overlays:') e processa o restante
+                    for i, line in enumerate(lines):
+                        if i == 0:
+                            continue  # Pula a primeira linha
+                            
+            except FileNotFoundError:
+                print(f"{VERMELHO}Erro: O arquivo {file_path} não foi encontrado. Pulando este arquivo.{RESET}")
+                continue
+            except Exception as e:
+                print(f"{VERMELHO}Erro ao processar o arquivo {file_path}: {e}{RESET}")
+                continue
+          
+    print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
+    
+    #Deleta os arquivos originais se true no arquivo de configuração
+    delete_collections_after_all_in_one = config.get('delete_collections_after_all_in_one', "false").lower() == "true"
+    if delete_collections_after_all_in_one:
+        print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
+        for file_name in overlay_files:
+            file_path = os.path.join(base_path, file_name)
+            try:
+                os.remove(file_path)
+                print(f"{VERDE}Arquivo {file_name} deletado com sucesso.{RESET}")
+            except OSError as e:
+                print(f"{VERMELHO}Erro ao tentar deletar o arquivo {file_name}: {e}{RESET}")
+
+#PROCEDIMENTO PRINCIPAL
 def main():
     if IS_DOCKER:
         start_time = datetime.now(user_tz)
@@ -1741,7 +1868,6 @@ def main():
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
         if IS_DOCKER:
-
             create_overlay_yaml(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", season_finale_shows, 
                                {"backdrop": config.get("backdrop_season_finale", {}),
                                 "text": config.get("text_season_finale", {})})
@@ -1788,8 +1914,6 @@ def main():
                                 "text": config.get("text_final_episode", {})})
         
             create_collection_yaml("TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", final_episode_shows, config)
-        
-           
 
         # Track all tvdbIds to exclude from the "returning" category
         all_included_tvdb_ids = set()
@@ -1921,7 +2045,6 @@ def main():
 
        # ---- New Show ----
         if IS_DOCKER:
-
             create_new_show_overlay_yaml(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_new_show"),
                                         "text": get_config_section(config, "text_new_show")}, 
@@ -1939,7 +2062,6 @@ def main():
 
        # ---- Added Episode Season - Season depth ----
         if IS_DOCKER:
-
             create_episode_on_season_overlay_yaml(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_episode_season"),
                                         "text": get_config_section(config, "text_episode_season")}, 
@@ -1957,7 +2079,6 @@ def main():
 
        # ---- Added New Episode Season - Season depth ----
         if IS_DOCKER:
-
             create_new_episode_on_season_overlay_yaml(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_new_episode_season"),
                                         "text": get_config_section(config, "text_new_episode_season")}, 
@@ -1975,7 +2096,6 @@ def main():
         
                # ---- Added Season - Season depth ----
         if IS_DOCKER:
-
             create_season_added_overlay_yaml(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_season_added"),
                                         "text": get_config_section(config, "text_new_episode_season")}, 
@@ -1993,7 +2113,6 @@ def main():
 
                # ---- Temporada Recém-Lancada - Season depth ----
         if IS_DOCKER:
-
             create_new_season_released_overlay_yaml(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_new_season_released"),
                                         "text": get_config_section(config, "text_new_season_released")}, 
@@ -2012,7 +2131,6 @@ def main():
         
                        # ---- Episódio Recém-Adicionado - Episode depth ----
         if IS_DOCKER:
-
             create_episode_added_overlay_yaml(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_episode_added"),
                                         "text": get_config_section(config, "text_episode_added")}, 
@@ -2030,7 +2148,6 @@ def main():
 
                        # ---- Episódio Recém-Lançado - Episode depth ----
         if IS_DOCKER:
-
             create_new_episode_released_overlay_yaml(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", 
                                        {"backdrop": get_config_section(config, "backdrop_new_episode_released"),
                                         "text": get_config_section(config, "text_new_episode_released")}, 
@@ -2221,14 +2338,23 @@ def main():
         
             create_collection_yaml("TSSK_TV_RETORNANDO_COLLECTION.yml", returning_shows, config)
         
-
-        print(f"\nTodos os arquivos YAML criados com sucesso")
+        #Concatenar todos os arquivos overlay em um único arquivo, para serem aplicados de uma só vez.
+        generate_all_in_one_overlays = config.get('generate_all_in_one_overlays', "false")
+        if generate_all_in_one_overlays:
+            concatenate_overlays(IS_DOCKER, overlay_path)
+            
+        #Concatenar todos os arquivos coleção em um único arquivo, para serem aplicados de uma só vez.
+        generate_all_in_one_collections = config.get('generate_all_in_one_collections', "false")
+        if generate_all_in_one_collections:
+            concatenate_collection(IS_DOCKER, collection_path)
+            
+        print(f"\nTodos os arquivos YAML criados com sucesso\n")
 
         # Calcular e mostrar o tempo de execução - Considerando se docker a varialvel configurada.
         if IS_DOCKER:
-            start_time = datetime.now(user_tz)
+            end_time = datetime.now(user_tz)
         else:
-            start_time = datetime.now()
+            end_time = datetime.now()
                 
         runtime = end_time - start_time
         hours, remainder = divmod(runtime.total_seconds(), 3600)
