@@ -1502,7 +1502,7 @@ def create_new_episode_released_overlay_yaml(output_file, config_sections, recen
         yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 ##############################END PLEX BASED CONFIG##############################
 
-def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_one=False):
+def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_one=False,generate_all_in_one_overlays=False):
     """
     Combina arquivos YML de overlays em um único arquivo chamado TSSK_TV_ALL_OVERLAYS_TOGETHER.yml.
 
@@ -1567,7 +1567,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
     print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
     
     #Deleta os arquivos originais se true no arquivo de configuração
-    if delete_overlay_after_all_in_one:
+    if delete_overlay_after_all_in_one and generate_all_in_one_overlays:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
         for file_name in overlay_files:
             file_path = os.path.join(base_path, file_name)
@@ -1732,7 +1732,7 @@ def create_collection_yaml(output_file, shows, config):
         # Use SafeDumper so our custom representer is used
         yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False, allow_unicode=True)
 
-def concatenate_collections(is_docker, collection_path="",delete_collections_after_all_in_one=False):
+def concatenate_collections(is_docker, collection_path="",delete_collections_after_all_in_one=False,generate_all_in_one_collections=False):
     """
     Combina arquivos YML de coleção em um único arquivo chamado TSSK_ALL_COLLECTIONS_TOGETHER.yml.
 
@@ -1782,7 +1782,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
     print(f"\n{VERDE}Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}")
     
     #Deleta os arquivos originais se true no arquivo de configuração
-    if delete_collections_after_all_in_one:
+    if delete_collections_after_all_in_one and generate_all_in_one_collections:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
         for file_name in collection_files:
             file_path = os.path.join(base_path, file_name)
@@ -2349,13 +2349,13 @@ def main():
         generate_all_in_one_overlays = str(config.get("generate_all_in_one_overlays", "false")).lower() == "true"
         delete_overlay_after_all_in_one = str(config.get("delete_overlay_after_all_in_one", "false")).lower() == "true"
         if generate_all_in_one_overlays:
-            concatenate_overlays(IS_DOCKER, overlay_path,delete_overlay_after_all_in_one)
+            concatenate_overlays(IS_DOCKER, overlay_path,delete_overlay_after_all_in_one,generate_all_in_one_overlays)
             
         #Concatenar todos os arquivos coleção em um único arquivo, para serem aplicados de uma só vez.
         generate_all_in_one_collections = str(config.get("generate_all_in_one_collections", "false")).lower() == "true"
         delete_collections_after_all_in_one = str(config.get("delete_collections_after_all_in_one", "false")).lower() == "true"
         if generate_all_in_one_collections:
-            concatenate_collections(IS_DOCKER, collection_path,delete_collections_after_all_in_one)
+            concatenate_collections(IS_DOCKER, collection_path,delete_collections_after_all_in_one,generate_all_in_one_collections)
             
         print(f"\nTodos os arquivos YAML criados com sucesso\n")
 
