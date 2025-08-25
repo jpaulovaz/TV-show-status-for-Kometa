@@ -13,8 +13,8 @@ print = functools.partial(print, flush=True)
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
-overlay_path = "/app/config/kometa/tssk/" #Só usada se docker true
-collection_path = "/app/config/kometa/tssk/" #Só usada se docker true
+overlay_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
+collection_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 VERSION = "2.5.0"
 
 # ANSI color codes
@@ -137,7 +137,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -150,7 +150,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -1512,24 +1512,21 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
     """
     print(f"\n{AZUL}Iniciando a concatenação dos arquivos de overlays...{RESET}")
     output_file_name = "TSSK_TV_ALL_OVERLAYS_TOGETHER.yml" #Não pode terminar com OVERLAY.yml para evitar loop infito das informações.
-    
-    # Define o diretório de busca com base em IS_DOCKER
-    base_path = overlay_path if is_docker else "."
 
     # Encontra todos os arquivos .yml de overlays e os ordena numericamente
-    overlay_files = sorted([f for f in os.listdir(base_path) if f.endswith('_OVERLAYS.yml')])
+    overlay_files = sorted([f for f in os.listdir(overlay_path) if f.endswith('_OVERLAYS.yml')])
     
     if not overlay_files:
         print(f"{LARANJA}Nenhum arquivo de overlay encontrado para concatenar.{RESET}")
         return
 
     line_count = 1
-    with open(os.path.join(base_path, output_file_name), "w", encoding="utf-8") as outfile:
+    with open(os.path.join(overlay_path, output_file_name), "w", encoding="utf-8") as outfile:
         # Escreve a linha de cabeçalho 'overlays:'
         outfile.write("overlays:\n")
         
         for file_name in overlay_files:
-            file_path = os.path.join(base_path, file_name)
+            file_path = os.path.join(overlay_path, file_name)
             try:
                 print(f"{VERDE}Processando {file_path} ...{RESET}")
                 with open(file_path, "r", encoding="utf-8") as infile:
@@ -1567,7 +1564,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
     if delete_overlay_after_all_in_one and generate_all_in_one_overlays:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
         for file_name in overlay_files:
-            file_path = os.path.join(base_path, file_name)
+            file_path = os.path.join(overlay_path, file_name)
             try:
                 os.remove(file_path)
                 print(f"{VERDE}Arquivo {file_name} deletado com sucesso.{RESET}")
@@ -1739,23 +1736,19 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
     """
     print(f"\n{AZUL}Iniciando a concatenação dos arquivos de coleção...{RESET}")
     output_file_name = "TSSK_ALL_COLLECTIONS_TOGETHER.yml" #Não pode terminar com collection.yml para evitar loop infito das informações.
-    
-    # Define o diretório de busca com base em IS_DOCKER
-    base_path = collection_path if is_docker else "."
-
     # Encontra todos os arquivos .yml de overlays e os ordena numericamente
-    collection_files = sorted([f for f in os.listdir(base_path) if f.endswith('_COLLECTION.yml')])
+    collection_files = sorted([f for f in os.listdir(collection_path) if f.endswith('_COLLECTION.yml')])
     
     if not collection_files:
         print(f"{LARANJA}Nenhum arquivo de coleção encontrado para concatenar.{RESET}")
         return
 
-    with open(os.path.join(base_path, output_file_name), "w", encoding="utf-8") as outfile:
+    with open(os.path.join(collection_path, output_file_name), "w", encoding="utf-8") as outfile:
         # Escreve a linha de cabeçalho 'collections:'
         outfile.write("collections:\n")
         
         for file_name in collection_files:
-            file_path = os.path.join(base_path, file_name)
+            file_path = os.path.join(collection_path, file_name)
             try:
                 print(f"{VERDE}Processando {file_path} ...{RESET}")
                 with open(file_path, "r", encoding="utf-8") as infile:
@@ -1782,7 +1775,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
     if delete_collections_after_all_in_one and generate_all_in_one_collections:
         print(f"{AZUL}Deletando os arquivos de overlay originais...{RESET}")
         for file_name in collection_files:
-            file_path = os.path.join(base_path, file_name)
+            file_path = os.path.join(overlay_path, file_name)
             try:
                 os.remove(file_path)
                 print(f"{VERDE}Arquivo {file_name} deletado com sucesso.{RESET}")
@@ -1791,10 +1784,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
 
 #PROCEDIMENTO PRINCIPAL
 def main():
-    if IS_DOCKER:
-        start_time = datetime.now(user_tz)
-    else:
-        start_time = datetime.now()
+    start_time = datetime.now(user_tz) if IS_DOCKER else datetime.now()
     
     print(f"\n{AZUL}{'*' * 40}\n{'*' * 14} {VERMELHO}TSSK {VERSION}{AZUL} {'*' * 14}\n{'*' * 40}{RESET}")
     print(f"\n{AZUL}Inicio do Processo: {start_time.strftime('%H:%M:%S')}\n")
@@ -1871,22 +1861,14 @@ def main():
             for show in season_finale_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", season_finale_shows, 
-                               {"backdrop": config.get("backdrop_season_finale", {}),
-                                "text": config.get("text_season_finale", {})})
+        create_overlay_yaml(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", season_finale_shows, 
+                           {"backdrop": config.get("backdrop_season_finale", {}),
+                            "text": config.get("text_season_finale", {})})
 
-            create_collection_yaml(collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", season_finale_shows, config)
-            os.chown(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", puid, pgid)
+        create_collection_yaml(collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", season_finale_shows, config)
+        #os.chown(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", puid, pgid)
 
-        else:
-            create_overlay_yaml("11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", season_finale_shows, 
-                               {"backdrop": config.get("backdrop_season_finale", {}),
-                                "text": config.get("text_season_finale", {})})
-            
-            create_collection_yaml("TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", season_finale_shows, config)
-        
         # ---- Recent Final Episodes ----
         final_episode_shows = find_recent_final_episodes(
             sonarr_url, sonarr_api_key, recent_days_final_episode, utc_offset
@@ -1902,22 +1884,14 @@ def main():
             for show in final_episode_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", final_episode_shows, 
-                               {"backdrop": config.get("backdrop_final_episode", {}),
-                                "text": config.get("text_final_episode", {})})
+        create_overlay_yaml(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", final_episode_shows, 
+                           {"backdrop": config.get("backdrop_final_episode", {}),
+                            "text": config.get("text_final_episode", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", final_episode_shows, config)
+        create_collection_yaml(collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", final_episode_shows, config)
         
-            os.chown(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", puid, pgid)
-
-        else:
-            create_overlay_yaml("12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", final_episode_shows, 
-                               {"backdrop": config.get("backdrop_final_episode", {}),
-                                "text": config.get("text_final_episode", {})})
-        
-            create_collection_yaml("TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", final_episode_shows, config)
+        #    os.chown(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", puid, pgid)
+        #    os.chown(collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", puid, pgid)
 
         # Track all tvdbIds to exclude from the "returning" category
         all_included_tvdb_ids = set()
@@ -1944,23 +1918,15 @@ def main():
         
         # Create YAMLs for new seasons
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", matched_shows, 
-                               {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
-                                "text": config.get("text_new_season", config.get("text", {}))})
+        create_overlay_yaml(overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", matched_shows, 
+                           {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
+                            "text": config.get("text_new_season", config.get("text", {}))})
         
-            create_collection_yaml(collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", matched_shows, config)
+        create_collection_yaml(collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", matched_shows, config)
             
-            os.chown(overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", puid, pgid)
+        #os.chown(overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", puid, pgid)
 
-        else:
-            create_overlay_yaml("08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", matched_shows, 
-                               {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
-                                "text": config.get("text_new_season", config.get("text", {}))})
-        
-            create_collection_yaml("TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", matched_shows, config)
-        
         # ---- New Season Started ----
         new_season_started_shows = find_new_season_started(
             sonarr_url, sonarr_api_key, recent_days_new_season_started, utc_offset, skip_unmonitored
@@ -1976,22 +1942,14 @@ def main():
             for show in new_season_started_shows:
                 print(f"- {show['title']} (Temporada {show['seasonNumber']}) started on {show['airDate']}")
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", new_season_started_shows, 
-                               {"backdrop": config.get("backdrop_new_season_started", {}),
-                                "text": config.get("text_new_season_started", {})})
+        create_overlay_yaml(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", new_season_started_shows, 
+                           {"backdrop": config.get("backdrop_new_season_started", {}),
+                            "text": config.get("text_new_season_started", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", new_season_started_shows, config)
+        create_collection_yaml(collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", new_season_started_shows, config)
 
-            os.chown(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", puid, pgid)
-
-        else:
-            create_overlay_yaml("07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", new_season_started_shows, 
-                               {"backdrop": config.get("backdrop_new_season_started", {}),
-                                "text": config.get("text_new_season_started", {})})
-            
-            create_collection_yaml("TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", new_season_started_shows, config)
+        #os.chown(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", puid, pgid)
 
         # ---- Upcoming Non-Finale Episodes ----
         upcoming_eps, skipped_eps = find_upcoming_regular_episodes(
@@ -2011,25 +1969,15 @@ def main():
             for show in upcoming_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
         
-        if IS_DOCKER:
-
-            create_overlay_yaml(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
-                                "text": config.get("text_upcoming_episode", {})})
+        create_overlay_yaml(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
+                           {"backdrop": config.get("backdrop_upcoming_episode", {}),
+                            "text": config.get("text_upcoming_episode", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
+        create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
 
-            os.chown(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", puid, pgid)
-           
-        else:
-            create_overlay_yaml("09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
-                                "text": config.get("text_upcoming_episode", {})})
+        #os.chown(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", puid, pgid)
         
-            create_collection_yaml("TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
-        
-
         # ---- Upcoming Finale Episodes ----
         finale_eps, skipped_finales = find_upcoming_finales(
             sonarr_url, sonarr_api_key, future_days_upcoming_finale, utc_offset, skip_unmonitored
@@ -2048,195 +1996,112 @@ def main():
             for show in finale_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
-                                "text": config.get("text_upcoming_finale", {})})
+        create_overlay_yaml(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
+                           {"backdrop": config.get("backdrop_upcoming_finale", {}),
+                            "text": config.get("text_upcoming_finale", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
-            os.chown(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", puid, pgid)
-
-        else:
-            create_overlay_yaml("10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
-                                "text": config.get("text_upcoming_finale", {})})
-        
-            create_collection_yaml("TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
+        create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
+        #os.chown(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", puid, pgid)
 
         # ---- Plex Based config ----
         # ---- New Episode Added ----
-        if IS_DOCKER:
-
-            create_new_episode_added_overlay_yaml(overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_episode_added"),
-                                        "text": get_config_section(config, "text_new_episode_added")}, 
-                                       recent_days_new_episode_added)
-
-            os.chown(overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_new_episode_added_overlay_yaml("03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_episode_added"),
-                                        "text": get_config_section(config, "text_new_episode_added")}, 
-                                       recent_days_new_episode_added)
-
+        create_new_episode_added_overlay_yaml(overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_new_episode_added"),
+                                    "text": get_config_section(config, "text_new_episode_added")}, 
+                                   recent_days_new_episode_added)
+        #os.chown(overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay Criada para série Que Tiveram um episódio adicionado recentemente em até {recent_days_new_episode_added} dias{RESET}")
 
         # ---- Fresh New Episode Added ----
-        if IS_DOCKER:
+        create_recent_new_episode_added_overlay_yaml(overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_recent_new_episode_added"),
+                                    "text": get_config_section(config, "text_recent_new_episode_added")}, 
+                                   recent_days_fresh_espisode_added)
 
-            create_recent_new_episode_added_overlay_yaml(overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_recent_new_episode_added"),
-                                        "text": get_config_section(config, "text_recent_new_episode_added")}, 
-                                       recent_days_fresh_espisode_added)
-
-            os.chown(overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_recent_new_episode_added_overlay_yaml("04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_recent_new_episode_added"),
-                                        "text": get_config_section(config, "text_recent_new_episode_added")}, 
-                                       recent_days_fresh_espisode_added)
-
+        #os.chown(overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado recentemente em até {recent_days_fresh_espisode_added} dias{RESET}")
        
         # ---- Fresh New Season Added ----
-        if IS_DOCKER:
+        create_new_season_added_overlay_yaml(overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_new_season_added"),
+                                    "text": get_config_section(config, "text_new_season_added")}, 
+                                   recent_days_new_season_added)
 
-            create_new_season_added_overlay_yaml(overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_season_added"),
-                                        "text": get_config_section(config, "text_new_season_added")}, 
-                                       recent_days_new_season_added)
-
-            os.chown(overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_new_season_added_overlay_yaml("05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_season_added"),
-                                        "text": get_config_section(config, "text_new_season_added")}, 
-                                       recent_days_new_season_added)
-
+        #os.chown(overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado a temporada recentemente em até {recent_days_new_season_added} dias{RESET}")
 
        # ---- New Show ----
-        if IS_DOCKER:
-            create_new_show_overlay_yaml(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_show"),
-                                        "text": get_config_section(config, "text_new_show")}, 
-                                       recent_days_new_show)
+        create_new_show_overlay_yaml(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_new_show"),
+                                    "text": get_config_section(config, "text_new_show")}, 
+                                   recent_days_new_show)
 
-            os.chown(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_new_show_overlay_yaml("06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_show"),
-                                        "text": get_config_section(config, "text_new_show")}, 
-                                       recent_days_new_show)
-
+        #os.chown(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay de show criada para shows adicionados {recent_days_new_show} passados{RESET}")
 
        # ---- Added Episode Season - Season depth ----
-        if IS_DOCKER:
-            create_episode_on_season_overlay_yaml(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_episode_season"),
-                                        "text": get_config_section(config, "text_episode_season")}, 
-                                       recent_days_episode_on_season)
+        create_episode_on_season_overlay_yaml(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_episode_season"),
+                                    "text": get_config_section(config, "text_episode_season")}, 
+                                   recent_days_episode_on_season)
 
-            os.chown(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_episode_on_season_overlay_yaml("13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_episode_season"),
-                                        "text": get_config_section(config, "text_episode_season")}, 
-                                       recent_days_episode_on_season)
- 
+        #os.chown(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay para temporada com episódio adicionado nos últimos {recent_days_episode_on_season} dias{RESET}")
 
        # ---- Added New Episode Season - Season depth ----
-        if IS_DOCKER:
-            create_new_episode_on_season_overlay_yaml(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_episode_season"),
-                                        "text": get_config_section(config, "text_new_episode_season")}, 
-                                       recent_days_new_episode_on_season)
+        create_new_episode_on_season_overlay_yaml(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_new_episode_season"),
+                                    "text": get_config_section(config, "text_new_episode_season")}, 
+                                   recent_days_new_episode_on_season)
 
-            os.chown(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_new_episode_on_season_overlay_yaml("14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_episode_season"),
-                                        "text": get_config_section(config, "text_new_episode_season")}, 
-                                       recent_days_new_episode_on_season)
- 
+        #os.chown(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay para temporada com episódio Novo adicionadonos últimos {recent_days_new_episode_on_season} dias{RESET}")
         
                # ---- Added Season - Season depth ----
-        if IS_DOCKER:
-            create_season_added_overlay_yaml(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_season_added"),
-                                        "text": get_config_section(config, "text_new_episode_season")}, 
-                                       recent_days_season_added)
-
-            os.chown(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_season_added_overlay_yaml("15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_season_added"),
-                                        "text": get_config_section(config, "text_season_added")}, 
-                                       recent_days_season_added)
- 
+        create_season_added_overlay_yaml(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_season_added"),
+                                    "text": get_config_section(config, "text_new_episode_season")}, 
+                                   recent_days_season_added)
+        #os.chown(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay para temporada adicionada nos últimos {recent_days_season_added} dias{RESET}")
 
                # ---- Temporada Recém-Lancada - Season depth ----
-        if IS_DOCKER:
-            create_new_season_released_overlay_yaml(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_season_released"),
-                                        "text": get_config_section(config, "text_new_season_released")}, 
-                                       recent_days_new_season_released)
+        create_new_season_released_overlay_yaml(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_new_season_released"),
+                                    "text": get_config_section(config, "text_new_season_released")}, 
+                                   recent_days_new_season_released)
 
-            os.chown(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_new_season_released_overlay_yaml("16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_season_released"),
-                                        "text": get_config_section(config, "text_new_season_released")}, 
-                                       recent_days_new_season_released)
- 
+        #os.chown(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay para Nova temporada adicionada nos últimos {recent_days_new_season_released} dias{RESET}")
         
         
                        # ---- Episódio Recém-Adicionado - Episode depth ----
-        if IS_DOCKER:
-            create_episode_added_overlay_yaml(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_episode_added"),
-                                        "text": get_config_section(config, "text_episode_added")}, 
-                                       recent_days_episode_added)
+        create_episode_added_overlay_yaml(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_episode_added"),
+                                    "text": get_config_section(config, "text_episode_added")}, 
+                                   recent_days_episode_added)
 
-            os.chown(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_episode_added_overlay_yaml("17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_episode_added"),
-                                        "text": get_config_section(config, "text_episode_added")}, 
-                                       recent_days_episode_added)
- 
+        #os.chown(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_episode_added} dias{RESET}")
 
                        # ---- Episódio Recém-Lançado - Episode depth ----
-        if IS_DOCKER:
-            create_new_episode_released_overlay_yaml(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_episode_released"),
-                                        "text": get_config_section(config, "text_new_episode_released")}, 
-                                       recent_days_new_episode_released)
+        create_new_episode_released_overlay_yaml(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", 
+                                   {"backdrop": get_config_section(config, "backdrop_new_episode_released"),
+                                    "text": get_config_section(config, "text_new_episode_released")}, 
+                                   recent_days_new_episode_released)
 
-            os.chown(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", puid, pgid) 
-        else:
-            
-            create_new_episode_released_overlay_yaml("18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", 
-                                       {"backdrop": get_config_section(config, "backdrop_new_episode_released"),
-                                        "text": get_config_section(config, "text_new_episode_released")}, 
-                                       recent_days_new_episode_released)
- 
+        #os.chown(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", puid, pgid) 
+        
         print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_new_episode_released} days{RESET}")        
         # ---- End Plex Based config ----
 
@@ -2279,44 +2144,28 @@ def main():
         #            for show in cancelled_shows:
         #                print(f"- {show['title']}")
                         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
-                               {"backdrop": config.get("backdrop_cancelled", {}),
-                                "text": config.get("text_cancelled", {})})
+        create_overlay_yaml(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
+                           {"backdrop": config.get("backdrop_cancelled", {}),
+                            "text": config.get("text_cancelled", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
-            
-            os.chown(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", puid, pgid)
+        create_collection_yaml(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
+          
+        #os.chown(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", puid, pgid)
 
-        else:
-            create_overlay_yaml("00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
-                               {"backdrop": config.get("backdrop_cancelled", {}),
-                                "text": config.get("text_cancelled", {})})
-        
-            create_collection_yaml("TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
-        
         # ---- Ended Shows ----
         #if ended_shows:
         #            print(f"\n{VERDE}Seriados já Finalizados:{RESET}")
         #            for show in ended_shows:
         #                print(f"- {show['title']}")
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", ended_shows, 
-                               {"backdrop": config.get("backdrop_ended", {}),
-                                "text": config.get("text_ended", {})})
+        create_overlay_yaml(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", ended_shows, 
+                           {"backdrop": config.get("backdrop_ended", {}),
+                            "text": config.get("text_ended", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml", ended_shows, config)
-            os.chown(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml", puid, pgid)
-
-        else:
-            create_overlay_yaml("01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", ended_shows, 
-                               {"backdrop": config.get("backdrop_ended", {}),
-                                "text": config.get("text_ended", {})})
-        
-            create_collection_yaml("TSSK_TV_FINALIZADOS_COLLECTION.yml", ended_shows, config)
+        create_collection_yaml(collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml", ended_shows, config)
+        #os.chown(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml", puid, pgid)
         
         # ---- Returning Shows ----
         returning_shows = find_returning_shows(sonarr_url, sonarr_api_key, all_included_tvdb_ids)
@@ -2329,21 +2178,13 @@ def main():
         #    for show in returning_shows:
         #        print(f"- {show['title']}")
         
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", returning_shows, 
-                               {"backdrop": config.get("backdrop_returning", {}),
-                                "text": config.get("text_returning", {})})
+        create_overlay_yaml(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", returning_shows, 
+                           {"backdrop": config.get("backdrop_returning", {}),
+                            "text": config.get("text_returning", {})})
         
-            create_collection_yaml(collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml", returning_shows, config)
-            os.chown(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml", puid, pgid)
-
-        else:
-            create_overlay_yaml("02_TSSK_TV_RETORNANDO_OVERLAYS.yml", returning_shows, 
-                               {"backdrop": config.get("backdrop_returning", {}),
-                                "text": config.get("text_returning", {})})
-        
-            create_collection_yaml("TSSK_TV_RETORNANDO_COLLECTION.yml", returning_shows, config)
+        create_collection_yaml(collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml", returning_shows, config)
+        #os.chown(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", puid, pgid)
+        #os.chown(collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml", puid, pgid)
         
         #Concatenar todos os arquivos overlay em um único arquivo, para serem aplicados de uma só vez.
         generate_all_in_one_overlays = str(config.get("generate_all_in_one_overlays", "false")).lower() == "true"
