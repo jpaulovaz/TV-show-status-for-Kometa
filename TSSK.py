@@ -137,7 +137,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -150,7 +150,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -1992,7 +1992,79 @@ def main():
                                 "text": config.get("text_new_season_started", {})})
             
             create_collection_yaml("TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", new_season_started_shows, config)
+
+        # ---- Upcoming Non-Finale Episodes ----
+        upcoming_eps, skipped_eps = find_upcoming_regular_episodes(
+            sonarr_url, sonarr_api_key, future_days_upcoming_episode, utc_offset, skip_unmonitored
+        )
         
+        # Filter out shows that are in the season finale or final episode categories
+        upcoming_eps = [show for show in upcoming_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
+        
+        # Add to excluded IDs for returning category
+        for show in upcoming_eps:
+            if show.get('tvdbId'):
+                all_included_tvdb_ids.add(show['tvdbId'])
+        
+        if upcoming_eps:
+            print(f"\n{VERDE}Seriados com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
+            for show in upcoming_eps:
+                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
+        
+        if IS_DOCKER:
+
+            create_overlay_yaml(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
+                                "text": config.get("text_upcoming_episode", {})})
+        
+            create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
+
+            os.chown(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", puid, pgid)
+           
+        else:
+            create_overlay_yaml("09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
+                                "text": config.get("text_upcoming_episode", {})})
+        
+            create_collection_yaml("TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
+        
+
+        # ---- Upcoming Finale Episodes ----
+        finale_eps, skipped_finales = find_upcoming_finales(
+            sonarr_url, sonarr_api_key, future_days_upcoming_finale, utc_offset, skip_unmonitored
+        )
+        
+        # Filtrar os programas que estão no final da temporada ou em categorias de episódios finais
+        finale_eps = [show for show in finale_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
+        
+        # Adicionar aos IDs excluídos para a categoria de retorno
+        for show in finale_eps:
+            if show.get('tvdbId'):
+                all_included_tvdb_ids.add(show['tvdbId'])
+        
+        if finale_eps:
+            print(f"\n{VERDE}Seriados com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
+            for show in finale_eps:
+                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
+        
+        if IS_DOCKER:
+            create_overlay_yaml(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
+                                "text": config.get("text_upcoming_finale", {})})
+        
+            create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
+            os.chown(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
+            os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", puid, pgid)
+
+        else:
+            create_overlay_yaml("10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
+                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
+                                "text": config.get("text_upcoming_finale", {})})
+        
+            create_collection_yaml("TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
+
+        # ---- Plex Based config ----
         # ---- New Episode Added ----
         if IS_DOCKER:
 
@@ -2166,78 +2238,8 @@ def main():
                                        recent_days_new_episode_released)
  
         print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_new_episode_released} days{RESET}")        
-        
-        # ---- Upcoming Non-Finale Episodes ----
-        upcoming_eps, skipped_eps = find_upcoming_regular_episodes(
-            sonarr_url, sonarr_api_key, future_days_upcoming_episode, utc_offset, skip_unmonitored
-        )
-        
-        # Filter out shows that are in the season finale or final episode categories
-        upcoming_eps = [show for show in upcoming_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
-        
-        # Add to excluded IDs for returning category
-        for show in upcoming_eps:
-            if show.get('tvdbId'):
-                all_included_tvdb_ids.add(show['tvdbId'])
-        
-        if upcoming_eps:
-            print(f"\n{VERDE}Seriados com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
-            for show in upcoming_eps:
-                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
-        
-        if IS_DOCKER:
+        # ---- End Plex Based config ----
 
-            create_overlay_yaml(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
-                                "text": config.get("text_upcoming_episode", {})})
-        
-            create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
-
-            os.chown(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", puid, pgid)
-           
-        else:
-            create_overlay_yaml("09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_episode", {}),
-                                "text": config.get("text_upcoming_episode", {})})
-        
-            create_collection_yaml("TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
-        
-
-        # ---- Upcoming Finale Episodes ----
-        finale_eps, skipped_finales = find_upcoming_finales(
-            sonarr_url, sonarr_api_key, future_days_upcoming_finale, utc_offset, skip_unmonitored
-        )
-        
-        # Filtrar os programas que estão no final da temporada ou em categorias de episódios finais
-        finale_eps = [show for show in finale_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
-        
-        # Adicionar aos IDs excluídos para a categoria de retorno
-        for show in finale_eps:
-            if show.get('tvdbId'):
-                all_included_tvdb_ids.add(show['tvdbId'])
-        
-        if finale_eps:
-            print(f"\n{VERDE}Seriados com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
-            for show in finale_eps:
-                print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
-        
-        if IS_DOCKER:
-            create_overlay_yaml(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
-                                "text": config.get("text_upcoming_finale", {})})
-        
-            create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
-            os.chown(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", puid, pgid)
-
-        else:
-            create_overlay_yaml("10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
-                               {"backdrop": config.get("backdrop_upcoming_finale", {}),
-                                "text": config.get("text_upcoming_finale", {})})
-        
-            create_collection_yaml("TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
-        
         # ---- skipped Shows ----
         if skipped_shows:
             print(f"\n{LARANJA}Seriados (não monitorados ou novos shows):{RESET}")
@@ -2272,10 +2274,10 @@ def main():
                 all_included_tvdb_ids.add(show["tvdbId"])
 
         # ---- Cancelled Shows ----
-        if cancelled_shows:
-                    print(f"\n{VERDE}Seriados que foram Cancelados:{RESET}")
-                    for show in cancelled_shows:
-                        print(f"- {show['title']}")
+        #if cancelled_shows:
+        #            print(f"\n{VERDE}Seriados que foram Cancelados:{RESET}")
+        #            for show in cancelled_shows:
+        #                print(f"- {show['title']}")
                         
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
@@ -2295,10 +2297,11 @@ def main():
             create_collection_yaml("TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
         
         # ---- Ended Shows ----
-        if ended_shows:
-                    print(f"\n{VERDE}Seriados já Finalizados:{RESET}")
-                    for show in ended_shows:
-                        print(f"- {show['title']}")
+        #if ended_shows:
+        #            print(f"\n{VERDE}Seriados já Finalizados:{RESET}")
+        #            for show in ended_shows:
+        #                print(f"- {show['title']}")
+        
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", ended_shows, 
                                {"backdrop": config.get("backdrop_ended", {}),
@@ -2321,10 +2324,10 @@ def main():
         # Filter out shows that are in the season finale or final episode categories
         returning_shows = [show for show in returning_shows if show.get('tvdbId') not in all_excluded_tvdb_ids]
         
-        if returning_shows:
-            print(f"\n{VERDE}Seriados que não foram cancelados, mas não tem data de retorno:{RESET}")
-            for show in returning_shows:
-                print(f"- {show['title']}")
+        #if returning_shows:
+        #    print(f"\n{VERDE}Seriados que não foram cancelados, mas não tem data de retorno:{RESET}")
+        #    for show in returning_shows:
+        #        print(f"- {show['title']}")
         
         if IS_DOCKER:
             create_overlay_yaml(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", returning_shows, 
