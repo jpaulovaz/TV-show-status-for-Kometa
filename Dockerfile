@@ -1,5 +1,5 @@
 # Use a slim Python image as the base
-FROM python:3.11-slim
+FROM python:3.13.7-slim
 
 # Disable .pyc files and enable real-time logging
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Define a variável CRON para o agendamento
 ARG CRON="0 2 * * *"
 
-# Set working directory
+#Set working directory
 WORKDIR /app
 
 # Install cron and tzdata (timezone handling if needed)

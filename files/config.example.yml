@@ -3,7 +3,7 @@ sonarr_url: 'http://192.168.0.1:8989' #URL do Sonarr
 sonarr_api_key: 'seu_api_sonarr' # API key do Sonarr
 tmdb_api_key: 'seu_api_tmdb'  #  API key TMDb
 
-skip_unmonitored: false #Ajuste para falso se quiser monitorar também o que não está sendo monitorado pelo Sonarr
+skip_unmonitored: true #Ajuste para falso se quiser monitorar também o que não está sendo monitorado pelo Sonarr
 
 #Gerar arquivos únicos de coleção e overlay, útil se deseja utilizar todos de uma vez.
 generate_all_in_one_overlays: false # marque true para habilitar a geração de arquivo único para overlay.
