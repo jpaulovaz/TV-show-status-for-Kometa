@@ -15,7 +15,7 @@ print = functools.partial(print, flush=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 overlay_path = "/app/config/kometa/tssk/" #Só usada se docker true
 collection_path = "/app/config/kometa/tssk/" #Só usada se docker true
-VERSION = "2.0.0"
+VERSION = "2.5.0"
 
 # ANSI color codes
 VERDE = '\033[32m'
