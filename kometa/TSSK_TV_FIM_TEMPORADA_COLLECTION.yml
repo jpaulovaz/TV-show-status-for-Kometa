@@ -1,8 +1,0 @@
-collections:
-  Final de Temporada:
-    plex_search:
-      all:
-        label: Final de Temporada
-    item_label.remove: Final de Temporada
-    smart_label: random
-    build_collection: false

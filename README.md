@@ -199,7 +199,13 @@ Renomeie `config.example.yml` to `config.yml` e edite o que desejar:
 
 - **sonarr_url:** Insira a URL seu Sonarr.
 - **sonarr_api_key:** Pode ser localizada nas configurações do Sonarr em Configurações => Geral => Segurança.
+- **tmdb_api_key:** Pode ser localizada nas configurações na página do TMDB em Configurações => API => Chave da API.
 - **skip_unmonitored:** Padrão `true` vai pular os seriados se  os episódio/temporada estiver marcada com Não Monitoradas no Sonarr.
+- **generate_all_in_one_overlays:** Padrão `false` Marque true para habilitar a geração de arquivo único para overlay.
+- **delete_overlay_after_all_in_one:** Padrão `false` Marque true para deletar arquivos base apos concatenar os originais(depende de generate_all_in_one_overlays).
+- **generate_all_in_one_collections:**  Padrão `false` Marque true para habilitar a geração de arquivo único para coleção
+- **delete_collections_after_all_in_one:** Padrão `false` Marque true para deletar arquivos base apos concatenar os originais depende de (generate_all_in_one_collections).
+
 - **utc_offset:** Configure o  deslocamento do [Fuso horário UTC](https://en.wikipedia.org/wiki/List_of_UTC_offsets). Ex.: Rio de Janeiro: -3, Amsterdam: +1, Tokyo: +9, etc.
 
 >[!NOTE]
