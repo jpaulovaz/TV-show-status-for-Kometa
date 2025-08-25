@@ -6,9 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 # Define a variável CRON para o agendamento
-ARG CRON="0 2 * * *" 
+ARG CRON="0 2 * * *"
 
-# Set working directory
+#Set working directory
 WORKDIR /app
 
 # Install cron and tzdata (timezone handling if needed)
