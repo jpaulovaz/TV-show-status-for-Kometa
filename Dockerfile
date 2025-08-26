@@ -8,6 +8,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Define a variável CRON para o agendamento
 ARG CRON="0 2 * * *"
 
+# Define default PUID and PGID for the appuser
+ARG PUID=1000
+ARG PGID=1000
+
 #Set working directory
 WORKDIR /app
 
@@ -15,6 +19,10 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends cron tzdata && \
     rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user and group
+RUN groupadd -g ${PGID} appuser && useradd -u ${PUID} -g appuser -m -s /bin/bash appuser
+
 
 # Copy only what we need
 COPY requirements.txt .
@@ -31,3 +39,6 @@ RUN chmod +x /entrypoint.sh
 
 # Start with the entrypoint script (sets up cron)
 ENTRYPOINT ["/entrypoint.sh"]
+
+# Switch to the non-root user for the main process
+USER appuser
