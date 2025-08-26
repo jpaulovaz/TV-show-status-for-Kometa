@@ -19,14 +19,17 @@ echo "export TZ=$TZ" >> /app/.cron_env # Inclui TZ para o contexto do cron
 > /etc/cron.d/tssk-cron
 
 # Define o shell e o usuário para as tarefas cron
-echo "SHELL=/bin/bash" > /etc/cron.d/tssk-cron
-echo "USER=appuser" >> /etc/cron.d/tssk-cron
+#echo "SHELL=/bin/bash" > /etc/cron.d/tssk-cron
+#echo "USER=appuser" >> /etc/cron.d/tssk-cron
 
 # Priorizar a nova variável DAILY_TIMES para horários em formato "normal"
 if [ -n "$DAILY_TIMES" ]; then
     echo "Configurando agendamentos diários a partir de DAILY_TIMES: $DAILY_TIMES"
-    IFS=',' read -ra ADDR <<< "$DAILY_TIMES"
+    # Remove aspas (simples e duplas) do início e do fim da string para evitar erros de parsing
+    CLEANED_TIMES=$(echo "$DAILY_TIMES" | sed "s/^'//;s/'$//;s/^\"//;s/\"$//")
+    IFS=',' read -ra ADDR <<< "$CLEANED_TIMES"
     for i in "${ADDR[@]}"; do
+        # Remove espaços em branco da string de tempo
         time_str=$(echo "$i" | xargs)
         if [[ "$time_str" =~ ^([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])$ ]]; then
             HOUR=${BASH_REMATCH[1]}
@@ -47,6 +50,15 @@ fi
 
 chmod 0644 /etc/cron.d/tssk-cron
 
+# --- PASSO 3: Execução Imediata (Opcional) --- #
+# Verifica se a variável RUN_ON_STARTUP está definida como "true" (ignorando maiúsculas/minúsculas)
+if [[ "${RUN_ON_STARTUP,,}" == "true" ]]; then
+    echo "Executando o script imediatamente na inicialização (RUN_ON_STARTUP=true)..."
+    # Executa em um subshell em segundo plano para não bloquear o início do cron
+    (source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log) &
+fi
+
+# --- PASSO 4: Inicia o Cron e o Log --- #
 cron -f &
 
 echo "O TSSK está sendo iniciado com a seguinte programação cron:"
