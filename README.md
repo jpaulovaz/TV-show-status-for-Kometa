@@ -104,7 +104,7 @@ docker compose up -d
 
 O que isso fará:
 - Baixa a versão mais recente da imagem `joaopaulofvaz/tssk` no Docker Hub
-- Executa o script dentro em um horário definido ( por padrão 2AM)
+- Executa o script dentro em um horário definido ( por padrão 02:00,08:00,14:00)
 - Monta seu diretório de configuração e diretório de saída dentro do container
 
 Você pode customizar a definição de horário modificando a variável  `CRON` no arquivo `docker-compose.yml`.
@@ -117,21 +117,25 @@ Você pode customizar a definição de horário modificando a variável  `CRON` 
 ```yaml
 services:
   tssk:
-    image: joaopaulofvaz/tssk:testa
+    image: joaopaulofvaz/tssk:latest
     container_name: tssk
     environment:
-      - CRON=02 09 * * * # diariamente às 02AM.
-      - DOCKER=true # importante para referenciamento
+      - HORARIOS_DE_EXECUCAO=02:00,08:00,14:00 # Informe os horários que deseja que o script seja executado (Ex: 08:00)
+      - EXECUTAR_AO_INICIAR=false #Executa imediamentamente ao iniciar.
+      - CRON=00 03 * * * #Opicionalmente informe o cron que deseja executar
+      - DOCKER=true
       - PUID=1000
       - PGID=1000
-      - TZ=America/Sao_Paulo # Ajuste seu fuso horário
+      - TZ=America/Sao_Paulo
     volumes:
-      - /seu/local/config/tssk:/app/config
-      - /seu/local/kometa/config:/app/config/kometa
+      - /home/joaopaulovaz/app/docker/tssk:/app/config
+      - /home/joaopaulovaz/app/docker/kometa/config:/app/config/kometa
     restart: unless-stopped
-    network_mode: bridge
+    network_mode: host
 ```
-
+> [!TIP]
+> Você pode informar os horários que deseja que o script seja executado, ou informar o CRON que deseja, mas o CRON tem prioridade em relação aos Horários de Execução. 
+> Você pode também executar o scprit imediatamente ao iniciar informando true em `EXECUTAR_AO_INICIAR`.
 ---
 
 ### 🧩 Continue a configuração
