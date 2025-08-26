@@ -52,6 +52,7 @@ else
 fi
 
 chmod 0644 /etc/cron.d/tssk-cron
+crontab /etc/cron.d/tssk-cron
 
 # --- PASSO 3: Execução Imediata (Opcional) --- #
 # Verifica se a variável RUN_ON_STARTUP está definida como "true" (ignorando maiúsculas/minúsculas)
