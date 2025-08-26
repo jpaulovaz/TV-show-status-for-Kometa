@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# Verifica se o usuário 'appuser' existe. Se não, encerra com erro.
-if ! id -u appuser >/dev/null 2>&1; then
-    echo "Erro: O usuário 'appuser' não existe na imagem. A imagem Docker precisa ser construída com este usuário."
-    exit 1
-fi
+# Create a non-root user and group
+RUN groupadd -g ${PGID} appuser && useradd -u ${PUID} -g appuser -m -s /bin/bash appuser
+
 
 # Cria a pasta /app/config se não existir
 mkdir -p /app/config/kometa/tssk
