@@ -122,9 +122,9 @@ services:
     image: joaopaulofvaz/tssk:latest
     container_name: tssk
     environment:
-      - HORARIOS_DE_EXECUCAO=02:00,08:00,14:00 # Informe os horários que deseja que o script seja executado (Ex: 08:00)
+      - HORARIOS_DE_EXECUCAO=08:00,20:00 # Informe os horários que deseja que o script seja executado (Ex: 08:00)
       - EXECUTAR_AO_INICIAR=false #Executa imediamentamente ao iniciar.
-      - CRON=00 03 * * * #Opicionalmente informe o cron que deseja executar
+      - CRON=18 16 * * * #Opicionalmente informe o cron que deseja executar (Sobrepõe horário de execução)
       - DOCKER=true
       - PUID=1000
       - PGID=1000
@@ -133,7 +133,7 @@ services:
       - /home/joaopaulovaz/app/docker/tssk:/app/config
       - /home/joaopaulovaz/app/docker/kometa/config:/app/config/kometa
     restart: unless-stopped
-    network_mode: host
+    network_mode: bridge
 ```
 > [!TIP]
 > Você pode informar os horários que deseja que o script seja executado, ou informar o CRON que deseja, mas o CRON tem prioridade em relação aos Horários de Execução. 
