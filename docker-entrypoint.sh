@@ -19,8 +19,8 @@ echo "export TZ=$TZ" >> /app/.cron_env # Inclui TZ para o contexto do cron
 > /etc/cron.d/tssk-cron
 
 # Define o shell e o usuário para as tarefas cron
-#echo "SHELL=/bin/bash" > /etc/cron.d/tssk-cron
-#echo "USER=appuser" >> /etc/cron.d/tssk-cron
+echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
+echo "USER=appuser" >> /etc/cron.d/tssk-cron
 
 # Priorizar a nova variável DAILY_TIMES para horários em formato "normal"
 if [ -n "$DAILY_TIMES" ]; then
