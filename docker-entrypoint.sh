@@ -22,11 +22,11 @@ chown "${PUID}:${PGID}" /app/.cron_env # Garante que o appuser possa ler este ar
 # Define o shell e o usuário para as tarefas cron
 echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
 
-# Priorizar a variável DAILY_TIMES para horários em formato "normal"
-if [ -n "$DAILY_TIMES" ]; then
-    echo "Configurando agendamentos diários a partir de DAILY_TIMES: $DAILY_TIMES"
+# Priorizar a variável HORARIOS_DE_EXECUCAO para horários em formato "normal"
+if [ -n "$HORARIOS_DE_EXECUCAO" ]; then
+    echo "Configurando agendamentos diários a partir de HORARIOS_DE_EXECUCAO: $HORARIOS_DE_EXECUCAO"
     # Remove aspas (simples e duplas) do início e do fim da string para evitar erros de parsing
-    CLEANED_TIMES=$(echo "$DAILY_TIMES" | sed "s/^'//;s/'$//;s/^\"//;s/\"$//")
+    CLEANED_TIMES=$(echo "$HORARIOS_DE_EXECUCAO" | sed "s/^'//;s/'$//;s/^\"//;s/\"$//")
     IFS=',' read -ra ADDR <<< "$CLEANED_TIMES"
     for i in "${ADDR[@]}"; do
         # Remove espaços em branco da string de tempo
@@ -37,22 +37,22 @@ if [ -n "$DAILY_TIMES" ]; then
             echo "$MINUTE $HOUR * * * appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
             echo "  - Tarefa cron adicionada para: $time_str"
         else
-            echo "  - Aviso: Formato de hora inválido '$time_str' em DAILY_TIMES. Esperado HH:MM. Ignorando."
+            echo "  - Aviso: Formato de hora inválido '$time_str' em HORARIOS_DE_EXECUCAO. Esperado HH:MM. Ignorando."
         fi
     done
 elif [ -n "$CRON" ]; then
     echo "Configurando agendamento a partir de CRON: $CRON"
     echo "$CRON appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
 else
-    echo "Nenhuma variável de ambiente DAILY_TIMES ou CRON foi definida. Nenhuma tarefa cron será agendada."
+    echo "Nenhuma variável de ambiente HORARIOS_DE_EXECUCAO ou CRON foi definida. Nenhuma tarefa cron será agendada."
     echo "# Nenhuma tarefa cron configurada." >> /etc/cron.d/tssk-cron # Garante que o arquivo não fique vazio
 fi
 
 chmod 0644 /etc/cron.d/tssk-cron
 
-# Verifica se a variável RUN_ON_STARTUP está definida como "true" (ignorando maiúsculas/minúsculas)
-if [[ "${RUN_ON_STARTUP,,}" == "true" ]]; then
-    echo "Executando o script imediatamente na inicialização (RUN_ON_STARTUP=true)..."
+# Verifica se a variável EXECUTAR_AO_INICIAR está definida como "true" (ignorando maiúsculas/minúsculas)
+if [[ "${EXECUTAR_AO_INICIAR,,}" == "true" ]]; then
+    echo "Executando o script imediatamente na inicialização (EXECUTAR_AO_INICIAR=true)..."
     # Executa como 'appuser' para manter a consistência de permissões com os trabalhos do cron.
     su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py" appuser 2>&1 | tee -a /var/log/cron.log &
 fi
