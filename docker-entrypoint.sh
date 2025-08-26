@@ -1,9 +1,4 @@
 #!/bin/bash
-
-# Create a non-root user and group
-RUN groupadd -g ${PGID} appuser && useradd -u ${PUID} -g appuser -m -s /bin/bash appuser
-
-
 # Cria a pasta /app/config se não existir
 mkdir -p /app/config/kometa/tssk
 
@@ -12,13 +7,13 @@ cp -r /app/files/* /app/config/
 
 # Ajusta as permissões do diretório de configuração para que o appuser possa escrever nele.
 chown -R "${PUID}:${PGID}" /app/config
-RUN su - appuser
 
 # Escreve as variáveis necessárias em um arquivo oculto para que o cron possa acessá-las
 echo "export DOCKER=$DOCKER" > /app/.cron_env
 echo "export PUID=$PUID" >> /app/.cron_env
 echo "export PGID=$PGID" >> /app/.cron_env
 echo "export TZ=$TZ" >> /app/.cron_env # Inclui TZ para o contexto do cron
+chown "${PUID}:${PGID}" /app/.cron_env # Garante que o appuser possa ler este arquivo
 
 # Limpa o arquivo de configuração do cron para evitar duplicações ou entradas antigas
 > /etc/cron.d/tssk-cron
@@ -26,7 +21,7 @@ echo "export TZ=$TZ" >> /app/.cron_env # Inclui TZ para o contexto do cron
 # Define o shell e o usuário para as tarefas cron
 echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
 
-# Priorizar a nova variável DAILY_TIMES para horários em formato "normal"
+# Priorizar a variável DAILY_TIMES para horários em formato "normal"
 if [ -n "$DAILY_TIMES" ]; then
     echo "Configurando agendamentos diários a partir de DAILY_TIMES: $DAILY_TIMES"
     # Remove aspas (simples e duplas) do início e do fim da string para evitar erros de parsing
@@ -53,7 +48,6 @@ else
 fi
 
 chmod 0644 /etc/cron.d/tssk-cron
-crontab /etc/cron.d/tssk-cron
 
 # --- PASSO 3: Execução Imediata (Opcional) --- #
 # Verifica se a variável RUN_ON_STARTUP está definida como "true" (ignorando maiúsculas/minúsculas)
@@ -69,6 +63,6 @@ cron -f &
 echo "O TSSK está sendo iniciado com a seguinte programação cron:"
 cat /etc/cron.d/tssk-cron
 echo ""
-touch /var/log/cron.log 
+touch /var/log/cron.log
 chown "${PUID}:${PGID}" /var/log/cron.log
 exec tail -f /var/log/cron.log
