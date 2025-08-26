@@ -1829,9 +1829,9 @@ def main():
 
         # Print chosen values
         print(f"future_days_new_season: {future_days_new_season}")
-        print(f"recent_days_new_season_started: {recent_days_new_season_started}")
         print(f"future_days_upcoming_episode: {future_days_upcoming_episode}")
         print(f"future_days_upcoming_finale: {future_days_upcoming_finale}")
+        print(f"recent_days_new_season_started: {recent_days_new_season_started}")
         print(f"recent_days_season_finale: {recent_days_season_finale}")
         print(f"recent_days_final_episode: {recent_days_final_episode}")
         print(f"recent_days_new_show: {recent_days_new_show}")
