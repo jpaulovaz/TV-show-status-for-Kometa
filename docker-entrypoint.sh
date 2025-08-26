@@ -1,4 +1,7 @@
 #!/bin/bash
+# Adiciona um usuário não root non-root
+RUN groupadd -g ${PGID} appuser && useradd -u ${PUID} -g appuser -m -s /bin/bash appuser
+
 # Cria a pasta /app/config se não existir
 mkdir -p /app/config/kometa/tssk
 
@@ -49,7 +52,6 @@ fi
 
 chmod 0644 /etc/cron.d/tssk-cron
 
-# --- PASSO 3: Execução Imediata (Opcional) --- #
 # Verifica se a variável RUN_ON_STARTUP está definida como "true" (ignorando maiúsculas/minúsculas)
 if [[ "${RUN_ON_STARTUP,,}" == "true" ]]; then
     echo "Executando o script imediatamente na inicialização (RUN_ON_STARTUP=true)..."
@@ -57,12 +59,8 @@ if [[ "${RUN_ON_STARTUP,,}" == "true" ]]; then
     su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py" appuser 2>&1 | tee -a /var/log/cron.log &
 fi
 
-# --- PASSO 4: Inicia o Cron e o Log --- #
+# ---Inicia o Cron e o Log --- #
 cron -f &
-
-echo "O TSSK está sendo iniciado com a seguinte programação cron:"
-cat /etc/cron.d/tssk-cron
-echo ""
 touch /var/log/cron.log
 chown "${PUID}:${PGID}" /var/log/cron.log
 exec tail -f /var/log/cron.log
