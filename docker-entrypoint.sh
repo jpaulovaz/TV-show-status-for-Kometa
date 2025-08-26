@@ -71,4 +71,4 @@ cat /etc/cron.d/tssk-cron
 echo ""
 
 touch /var/log/cron.log 
-tail -f /var/log/cron.log
+exec tail -f /var/log/cron.log

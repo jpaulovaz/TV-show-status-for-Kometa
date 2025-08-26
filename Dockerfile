@@ -39,6 +39,3 @@ RUN chmod +x /entrypoint.sh
 
 # Start with the entrypoint script (sets up cron)
 ENTRYPOINT ["/entrypoint.sh"]
-
-# Switch to the non-root user for the main process
-USER appuser
