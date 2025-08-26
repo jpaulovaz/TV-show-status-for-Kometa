@@ -50,15 +50,16 @@ fi
 
 chmod 0644 /etc/cron.d/tssk-cron
 
-# Verifica se a variável EXECUTAR_AO_INICIAR está definida como "true" (ignorando maiúsculas/minúsculas)
-if [[ "${EXECUTAR_AO_INICIAR,,}" == "true" ]]; then
-    echo "Executando o script imediatamente na inicialização (EXECUTAR_AO_INICIAR=true)..."
-    # Executa como 'appuser' para manter a consistência de permissões com os trabalhos do cron.
-    su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py" appuser 2>&1 | tee -a /var/log/cron.log &
-fi
-
-# ---Inicia o Cron e o Log --- #
-cron -f &
+# Alterações de permissão para o usuário do cron
 touch /var/log/cron.log
 chown "${PUID}:${PGID}" /var/log/cron.log
+
+# Verifica se a variável EXECUTAR_AO_INICIAR está definida como "true" (ignora maiúsculas/minúsculas)
+if [[ "${EXECUTAR_AO_INICIAR,,}" == "true" ]]; then
+    echo "Executando o script imediatamente na inicialização (EXECUTAR_AO_INICIAR=true)..."
+    su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" appuser &
+fi
+
+# --- Inicia o Cron e o Log --- #
+cron -f &
 exec tail -f /var/log/cron.log

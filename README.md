@@ -5,6 +5,8 @@ Este é um fork de https://github.com/netplexflix/TV-show-status-for-Kometa, tod
 * Corrigido o fato do script não salvar os arquivos na pasta do Kometa quando executando em Docker;
 * Inseridos alguns scripts para filtros de situações no passado vindo do Plex.
 * A possibilidade de ativar a opção para que todos os scritps sejam salvos em um único arquivo, economizando tempo de configuração.
+* A possibilidade do agendamento de vários horário para a execução do script.
+* A possibilidade de iniciar o script imediatamente após a inicialização do Docker.
 * Script Traduzido para pt-BR.
 
 # 📺 Status dos Seriados para Kometa
