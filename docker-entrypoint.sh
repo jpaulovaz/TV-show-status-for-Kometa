@@ -12,8 +12,8 @@ mkdir -p /app/config/kometa/tssk
 # Copia todo o conteúdo de /app/files para /app/config (sobrescreve arquivos existentes)
 cp -r /app/files/* /app/config/
 
-# Ajustar permissões se necessário
-chown -R "${PUID}:${PGID}" /app
+# Ajusta as permissões do diretório de configuração para que o appuser possa escrever nele.
+chown -R "${PUID}:${PGID}" /app/config
 
 # Escreve as variáveis necessárias em um arquivo oculto para que o cron possa acessá-las
 echo "export DOCKER=$DOCKER" > /app/.cron_env
@@ -59,8 +59,8 @@ chmod 0644 /etc/cron.d/tssk-cron
 # Verifica se a variável RUN_ON_STARTUP está definida como "true" (ignorando maiúsculas/minúsculas)
 if [[ "${RUN_ON_STARTUP,,}" == "true" ]]; then
     echo "Executando o script imediatamente na inicialização (RUN_ON_STARTUP=true)..."
-    # Executa em um subshell em segundo plano para não bloquear o início do cron
-    (source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log) &
+    # Executa como 'appuser' para manter a consistência de permissões com os trabalhos do cron.
+    su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py" appuser 2>&1 | tee -a /var/log/cron.log &
 fi
 
 # --- PASSO 4: Inicia o Cron e o Log --- #

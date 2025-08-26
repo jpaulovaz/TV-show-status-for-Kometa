@@ -23,7 +23,6 @@ RUN apt-get update && \
 # Create a non-root user and group
 RUN groupadd -g ${PGID} appuser && useradd -u ${PUID} -g appuser -m -s /bin/bash appuser
 
-
 # Copy only what we need
 COPY requirements.txt .
 
