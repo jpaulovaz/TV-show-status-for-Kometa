@@ -12,6 +12,7 @@ cp -r /app/files/* /app/config/
 
 # Ajusta as permissões do diretório de configuração para que o appuser possa escrever nele.
 chown -R "${PUID}:${PGID}" /app/config
+RUN su - appuser
 
 # Escreve as variáveis necessárias em um arquivo oculto para que o cron possa acessá-las
 echo "export DOCKER=$DOCKER" > /app/.cron_env
@@ -68,6 +69,6 @@ cron -f &
 echo "O TSSK está sendo iniciado com a seguinte programação cron:"
 cat /etc/cron.d/tssk-cron
 echo ""
-
 touch /var/log/cron.log 
+chown "${PUID}:${PGID}" /var/log/cron.log
 exec tail -f /var/log/cron.log
