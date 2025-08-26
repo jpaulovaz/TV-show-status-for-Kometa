@@ -15,7 +15,7 @@ print = functools.partial(print, flush=True)
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 overlay_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 collection_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
-VERSION = "2.5.3"
+VERSION = "3.0.0"
 
 # ANSI color codes
 VERDE = '\033[32m'
@@ -137,7 +137,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -150,7 +150,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -1829,9 +1829,9 @@ def main():
 
         # Print chosen values
         print(f"future_days_new_season: {future_days_new_season}")
-        print(f"recent_days_new_season_started: {recent_days_new_season_started}")
         print(f"future_days_upcoming_episode: {future_days_upcoming_episode}")
         print(f"future_days_upcoming_finale: {future_days_upcoming_finale}")
+        print(f"recent_days_new_season_started: {recent_days_new_season_started}")
         print(f"recent_days_season_finale: {recent_days_season_finale}")
         print(f"recent_days_final_episode: {recent_days_final_episode}")
         print(f"recent_days_new_show: {recent_days_new_show}")
