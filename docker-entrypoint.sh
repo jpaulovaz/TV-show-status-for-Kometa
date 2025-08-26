@@ -23,7 +23,11 @@ chown "${PUID}:${PGID}" /app/.cron_env # Garante que o appuser possa ler este ar
 echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
 
 # Priorizar a variável HORARIOS_DE_EXECUCAO para horários em formato "normal"
-if [ -n "$HORARIOS_DE_EXECUCAO" ]; then
+if [ -n "$CRON" ]; then
+    echo "Configurando agendamento a partir de CRON: $CRON"
+    echo "$CRON appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
+    
+elif [ -n "$HORARIOS_DE_EXECUCAO" ]; then
     echo "Configurando agendamentos diários a partir de HORARIOS_DE_EXECUCAO: $HORARIOS_DE_EXECUCAO"
     # Remove aspas (simples e duplas) do início e do fim da string para evitar erros de parsing
     CLEANED_TIMES=$(echo "$HORARIOS_DE_EXECUCAO" | sed "s/^'//;s/'$//;s/^\"//;s/\"$//")
@@ -40,9 +44,6 @@ if [ -n "$HORARIOS_DE_EXECUCAO" ]; then
             echo "  - Aviso: Formato de hora inválido '$time_str' em HORARIOS_DE_EXECUCAO. Esperado HH:MM. Ignorando."
         fi
     done
-elif [ -n "$CRON" ]; then
-    echo "Configurando agendamento a partir de CRON: $CRON"
-    echo "$CRON appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
 else
     echo "Nenhuma variável de ambiente HORARIOS_DE_EXECUCAO ou CRON foi definida. Nenhuma tarefa cron será agendada."
     echo "# Nenhuma tarefa cron configurada." >> /etc/cron.d/tssk-cron # Garante que o arquivo não fique vazio
