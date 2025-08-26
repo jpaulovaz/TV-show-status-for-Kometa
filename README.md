@@ -119,7 +119,7 @@ Você pode customizar a definição de horário modificando a variável  `CRON` 
 ```yaml
 services:
   tssk:
-    image: joaopaulofvaz/tssk:latest
+    image: joaopaulovaz/tssk:latest
     container_name: tssk
     environment:
       - HORARIOS_DE_EXECUCAO=08:00,20:00 # Informe os horários que deseja que o script seja executado (Ex: 08:00)
