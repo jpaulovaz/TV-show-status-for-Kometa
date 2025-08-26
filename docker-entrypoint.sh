@@ -35,8 +35,8 @@ elif [ -n "$HORARIOS_DE_EXECUCAO" ]; then
         # Remove espaços em branco da string de tempo
         time_str=$(echo "$i" | xargs)
         if [[ "$time_str" =~ ^([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])$ ]]; then
-            HOUR=${BASH_REMATCH[1]}
-            MINUTE=${BASH_REMATCH[2]}
+            MINUTE=$(echo "$time_str" | cut -d: -f2)
+            HOUR=$(echo "$time_str" | cut -d: -f1)
             echo "$MINUTE $HOUR * * * appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
             echo "  - Tarefa cron adicionada para: $time_str"
         else
