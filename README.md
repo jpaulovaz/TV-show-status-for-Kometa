@@ -83,7 +83,7 @@ cd TV-show-status-for-Kometa
 
 2. Instale as dependências:
 - Certifique de ter [Python](https://www.python.org/downloads/) instalado (`>=3.9`).
-- Abra um terminal apontando para o diretório do scpirt.
+- Abra um terminal apontando para o diretório do scriprt.
 > [!TIP]
 >Usuário Windows:  
 > Vá para a pasta do TSSK (onde TSSK.py está). Clique com botão direito do mouse em um espaço em branco dentro da pasta e selecione  `Abrir no Terminal`.
@@ -127,7 +127,8 @@ services:
       - CRON=18 16 * * * #Opicionalmente informe o cron que deseja executar (Sobrepõe horário de execução)
       - DOCKER=true
       - PUID=1000
-      - PGID=1000
+      - PGID=1000- Inserida a possibilidade de configurar o script para rodar em diversos horários, sem a necessidade de entender de tradução para CRON, os horários devem ser informados separados por virgula Ex.: 08:00,09:00. Útil para quem tem uma biblioteca muito dinâmcia, onde itens são baixados para o Plex constantemente.
+- Inserida a possibilidade da execução imediata do script ao inicicar o docker, as próximas execuções seguem de acordo com o CRON ou horário configurado. 
       - TZ=America/Sao_Paulo
     volumes:
       - /home/joaopaulovaz/app/docker/tssk:/app/config
@@ -137,7 +138,7 @@ services:
 ```
 > [!TIP]
 > Você pode informar os horários que deseja que o script seja executado, ou informar o CRON que deseja, mas o CRON tem prioridade em relação aos Horários de Execução. 
-> Você pode também executar o scprit imediatamente ao iniciar informando true em `EXECUTAR_AO_INICIAR`.
+> Você pode também executar o script imediatamente ao iniciar informando true em `EXECUTAR_AO_INICIAR`.
 ---
 
 ### 🧩 Continue a configuração
