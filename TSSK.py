@@ -1615,7 +1615,7 @@ def main():
         season_finale_shows = find_recent_season_finales(
             sonarr_url, sonarr_api_key, recent_days_season_finale, utc_offset, skip_unmonitored
         )
-        
+         
         # Add to excluded IDs
         for show in season_finale_shows:
             if show.get('tvdbId'):
