@@ -30,6 +30,7 @@ RESET = '\033[0m'
 BOLD = '\033[1m'
 
 def strip_ansi_codes(text):
+    """Remove códigos de escape ANSI de uma string para calcular seu comprimento visível."""
     ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
     return ansi_escape.sub('', text)
  
