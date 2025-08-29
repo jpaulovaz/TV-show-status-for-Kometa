@@ -24,7 +24,7 @@ AZUL = '\033[34m'
 VERMELHO = '\033[31m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
-
+ 
 #Exibe as informações das variaveis DOCKER, se docker.
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
