@@ -42,6 +42,9 @@ chown "${PUID}:${PGID}" /app/.cron_env # Garante que o appuser possa ler este ar
 # Limpa o arquivo de configuração do cron para evitar duplicações ou entradas antigas
 > /etc/cron.d/tssk-cron
 
+# Adiciona o cronjob no arquivo do crontab
+echo "SHELL=/bin/bash" > /etc/cron.d/tssk-cron
+echo "USER=appuser" >> /etc/cron.d/tssk-cron
 # Define o shell e o usuário para as tarefas cron
 echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
 
@@ -73,6 +76,8 @@ else
 fi
 
 chmod 0644 /etc/cron.d/tssk-cron
+crontab /etc/cron.d/tssk-cron
+echo "O TSSK está sendo iniciado com a seguinte programação cron : $CRON"
 
 # Cria o diretório de logs e o arquivo inicial para o tail funcionar
 mkdir -p /app/config/logs
