@@ -3,52 +3,238 @@ sonarr_url: 'http://192.168.0.1:8989' #URL do Sonarr
 sonarr_api_key: 'seu_api_sonarr' # API key do Sonarr
 tmdb_api_key: 'seu_api_tmdb'  #  API key TMDb
 
-skip_unmonitored: true #Ajuste para falso se quiser monitorar também o que não está sendo monitorado pelo Sonarr
+skip_unmonitored: false
 
 #Gerar arquivos únicos de coleção e overlay, útil se deseja utilizar todos de uma vez.
-generate_all_in_one_overlays: false # marque true para habilitar a geração de arquivo único para overlay.
-delete_overlay_after_all_in_one: true # marque false para deletar arquivos base apos concatenar os originais(depende de generate_all_in_one_overlays).
-generate_all_in_one_collections: false # marque true para habilitar a geração de arquivo único para coleção
-delete_collections_after_all_in_one: true # marque false para deletar arquivos base apos concatenar os originais depende de (generate_all_in_one_collections).
-
-#Deslocamento de fuso horário
+generate_all_in_one_overlays: false 
+delete_overlay_after_all_in_one: false 
+generate_all_in_one_collections: false
+delete_collections_after_all_in_one: false
+#Deslocamento de fuso-horario:
 utc_offset: +0
 
+################################# NIVEL SERIADO ################################
 ################################################################################
-##########                     NOVA TEMPORADA EM BREVE                ##########
+##########                           CANCELADOS:                      ##########
 ################################################################################
-#Arquivo: 08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml
+#Arquivo: 00_TSSK_TV_CANCELADOS_OVERLAYS.yml
 
-future_days_new_season: 31
-
-collection_new_season:
-  collection_name: "Nova Temporada em Breve"
+collection_cancelled:
+  collection_name: "Seriados Cancelados"
   smart_label: title.desc
-  sort_title: "+1_2Nova Temporada em Breve"
+  sort_title: "+1_2Seriados Cancelados"
   ignore_blank_results: true
 
-backdrop_new_season:
+backdrop_cancelled:
   enable: true
-  back_color: "#228B22" #VERDE
+  back_color: "#00000080" #PRETO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
+  group: backdrop_seriado
+  weight: 0
 
-text_new_season:
-  date_format: "ddd dd/mm"
-  capitalize_dates: true
-  use_text: "NOVA TEMPORADA EM"
+text_cancelled:
+  use_text: "SERIADO CANCELADO"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 15
   font_size: 65
-  font_color: "#FFFFFF" # BRANCO
+  font_color: "#00ff3d" #VERDE
+  group: text_seriado
+  weight: 0
   
- #font: Ajuste com a fonte dessejada.
+################################################################################
+##########                           FINALIZADO:                      ##########
+################################################################################
+#Arquivo: 01_TSSK_TV_FINALIZADOS_OVERLAYS.yml
+
+collection_ended:
+  collection_name: "Seriados Finalizados"
+  smart_label: title.desc
+  sort_title: "+1_2Seriados Finalizados"
+  ignore_blank_results: true
+
+backdrop_ended:
+  enable: true
+  back_color: "#00000080" #PRETO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 1
+  
+text_ended:
+  use_text: "SERIADO FINALIZADO"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#00ff3d" #VERDE
+  group: text_seriado
+  weight: 1
+
+################################################################################
+##########                         RETORNANDO:                         ##########
+################################################################################
+#Arquivo: 02_TSSK_TV_RETORNANDO_OVERLAYS.yml
+
+collection_returning:
+  collection_name: "Seriados que Retornarão"
+  smart_label: title.desc
+  sort_title: "+1_2Seriados que Retornarão"
+  ignore_blank_results: true
+
+backdrop_returning:
+  enable: true
+  back_color: "#00000080" #PRETO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 2
+
+text_returning:
+  use_text: "EM BREVE NOVOS EPISÓDIOS"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#ff9000" #MOSTARDA
+  group: text_seriado
+  weight: 2
+  
+################################################################################
+##########                      NOVO EPISÓDIO ADICIONADO:             ##########
+################################################################################
+#Arquivo: 03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml
+
+recent_days_new_episode_added: 7
+
+backdrop_new_episode_added:
+  enable: true
+  back_color: "#E5091480" #VERMELHO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 3
+
+text_new_episode_added:
+  use_text: "NOVOS EPISÓDIOS"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#FFFFFF" #BRANCO
+  group: text_seriado
+  weight: 3
+
+################################################################################
+##########                      NOVO EPISÓDIO RECENTE ADICIONADO:     ##########
+################################################################################
+#Arquivo: 04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml
+
+recent_days_fresh_espisode_added: 10
+
+backdrop_recent_new_episode_added:
+  enable: true
+  back_color: "#E5091480" #VERMELHO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 4
+  
+text_recent_new_episode_added:
+  use_text: "EPISÓDIO NOVO"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#FFFFFF" #BRANCO
+  group: text_seriado
+  weight: 4
+
+################################################################################
+##########                      NOVA TEMPORADA ADICIONADA:            ##########
+################################################################################
+#Arquivo: 05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml
+
+recent_days_new_season_added: 10
+
+backdrop_new_season_added:
+  enable: true
+  back_color: "#E5091480" #VERMELHO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 5
+
+text_new_season_added:
+  use_text: "TEMPORADA ATUALIZADA"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#FFFFFF" #BRANCO
+  group: text_seriado
+  weight: 5
+
+################################################################################
+##########                         NOVO SERIADO:                      ##########
+################################################################################
+#Arquivo: 06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml
+
+recent_days_new_show: 15
+
+backdrop_new_show:
+  enable: true
+  back_color: "#E5091480" #VERMELHO
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 6
+
+text_new_show:
+  use_text: "ADICIONADO RECENTEMENTE"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#FFFFFF" #BRANCO
+  group: text_seriado
+  weight: 6
 
 ################################################################################
 ##########                    NOVA TEMPORADA INICIADA:                ##########
@@ -64,14 +250,15 @@ collection_new_season_started:
 
 backdrop_new_season_started:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_seriado
+  weight: 7
 
 text_new_season_started:
   use_text: "NOVA TEMPORADA INICIADA"
@@ -81,14 +268,53 @@ text_new_season_started:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-  #font: Ajuste com a fonte dessejada.
+  group: text_seriado
+  weight: 7
+  
+################################################################################
+##########                     NOVA TEMPORADA EM BREVE                ##########
+################################################################################
+#Arquivo: 08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml
+
+future_days_new_season: 31
+
+collection_new_season:
+  collection_name: "Nova Temporada em Breve"
+  smart_label: title.desc
+  sort_title: "+1_2Nova Temporada em Breve"
+  ignore_blank_results: true
+
+backdrop_new_season:
+  enable: true
+  back_color: "#228B2280" #VERDE
+  back_height: 90
+  back_width: 1000
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 0
+  group: backdrop_seriado
+  weight: 8
+
+text_new_season:
+  date_format: "ddd dd/mm"
+  capitalize_dates: true
+  use_text: "NOVA TEMPORADA EM"
+  horizontal_align: center
+  horizontal_offset: 0
+  vertical_align: bottom
+  vertical_offset: 15
+  font_size: 65
+  font_color: "#FFFFFF" # BRANCO
+  group: text_seriado
+  weight: 8
 
 ################################################################################
 ##########                     PRÓXIMO EPISÓDIO:                      ##########
 ################################################################################
 #Arquivo: 09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml
 
-future_days_upcoming_episode: 31
+future_days_upcoming_episode: 15
 
 collection_upcoming_episode:
   collection_name: "Próximo Episódio"
@@ -98,13 +324,15 @@ collection_upcoming_episode:
   
 backdrop_upcoming_episode:
   enable: true
-  back_color: "#006580" #AZUL
+  back_color: "#00658080" #AZUL
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
+  group: backdrop_seriado
+  weight: 9
   
 text_upcoming_episode:
   date_format: "ddd dd/mm"
@@ -116,14 +344,15 @@ text_upcoming_episode:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-  #font: Ajuste com a fonte dessejada.
+  group: text_seriado
+  weight: 9
   
 ################################################################################
 ##########                     PROXIMO EPISÓDIO FINAL:                ##########
 ################################################################################
 #Arquivo: 10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml
 
-future_days_upcoming_finale: 31
+future_days_upcoming_finale: 15
 
 collection_upcoming_finale:
   collection_name: "Chegando ao Fim"
@@ -133,14 +362,16 @@ collection_upcoming_finale:
   
 backdrop_upcoming_finale:
   enable: true
-  back_color: "#9932CC" #ROXO
+  back_color: "#9932CC80" #ROXO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_seriado
+  weight: 10
+  
 text_upcoming_finale:
   date_format: "ddd dd/mm"      # e.g., "yyyy-mm-dd", "mm/dd", "dd/mm", etc.
   capitalize_dates: true
@@ -151,100 +382,8 @@ text_upcoming_finale:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-  #font: Ajuste com a fonte dessejada.
-
-################################################################################
-##########                           CANCELADOS:                      ##########
-################################################################################
-#Arquivo: 00_TSSK_TV_CANCELADOS_OVERLAYS.yml
-
-collection_cancelled:
-  collection_name: "Seriados Cancelados"
-  smart_label: title.desc
-  sort_title: "+1_2Seriados Cancelados"
-  ignore_blank_results: true
-
-backdrop_cancelled:
-  enable: true
-  back_color: "#000000" #PRETO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_cancelled:
-  use_text: "SERIADO CANCELADO"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#00ff3d" #VERDE
-  #font: Ajuste com a fonte dessejada.
-  
-################################################################################
-##########                           FINALIZADO:                      ##########
-################################################################################
-#Arquivo: 01_TSSK_TV_FINALIZADOS_OVERLAYS.yml
-
-collection_ended:
-  collection_name: "Seriados Finalizados"
-  smart_label: title.desc
-  sort_title: "+1_2Seriados Finalizados"
-  ignore_blank_results: true
-
-backdrop_ended:
-  enable: true
-  back_color: "#000000" #PRETO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_ended:
-  use_text: "SERIADO FINALIZADO"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#00ff3d" #VERDE
-  #font: Ajuste com a fonte dessejada.
-
-################################################################################
-##########                         RETORNANDO:                         ##########
-################################################################################
-#Arquivo: 02_TSSK_TV_RETORNANDO_OVERLAYS.yml
-
-collection_returning:
-  collection_name: "Seriados que Retornarão"
-  smart_label: title.desc
-  sort_title: "+1_2Seriados que Retornarão"
-  ignore_blank_results: true
-
-backdrop_returning:
-  enable: true
-  back_color: "#000000" #PRETO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_returning:
-  use_text: "EM BREVE NOVOS EPISÓDIOS"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#ff9000" #MOSTARDA
-  #font: Ajuste com a fonte dessejada.
+  group: text_seriado
+  weight: 10
 
 ################################################################################
 ##########                       FIANAL DE TEMPORADA:                 ##########
@@ -260,13 +399,15 @@ collection_season_finale:
 
 backdrop_season_finale:
   enable: true
-  back_color: "#ffb902" #AMARELO
+  back_color: "#ffb90280" #AMARELO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
+  group: backdrop_seriado
+  weight: 11
 
 text_season_finale:
   use_text: "FINAL DE TEMPORADA"
@@ -275,8 +416,10 @@ text_season_finale:
   vertical_align: bottom
   vertical_offset: 15
   font_size: 65
-  font_color: "#000000" #PRETO
-  #font: Ajuste com a fonte dessejada.
+  font_color: "#00000080" #PRETO
+  group: texto_seriado
+  weight: 11
+
 
 ################################################################################
 ##########                       EPISÓDIO FINAL:                      ##########
@@ -292,13 +435,15 @@ collection_final_episode:
 
 backdrop_final_episode:
   enable: true
-  back_color: "#ffb902" #MOSTARDA
+  back_color: "#ffb90280" #MOSTARDA
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
+  group: backdrop_seriado
+  weight: 12
 
 text_final_episode:
   use_text: "EPISÓDIO FINAL"
@@ -307,144 +452,32 @@ text_final_episode:
   vertical_align: bottom
   vertical_offset: 15
   font_size: 65
-  font_color: "#000000" #PRETO
- #font: Ajuste com a fonte dessejada.
+  font_color: "#00000080" #PRETO
+  group: text_seriado
+  weight: 12
 
- ##DAQUI PRA BAIXO É UTILIZADO O PLEX AO INVÉS DO SONARR PARA CRIAR AS OVERLAYS##  
-
-##NÃO GERAM COLECAO
-
-#################################NIVEL SERIADO#################################
-
-################################################################################
-##########                      NOVO EPISÓDIO ADICIONADO:             ##########
-################################################################################
-#Arquivo: 03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml
-
-recent_days_new_episode_added: 7
-#create_new_episode_added_overlay_yaml
-backdrop_new_episode_added:
-  enable: true
-  back_color: "#EB3233" #VERMELHO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_new_episode_added:
-  use_text: "NOVOS EPISÓDIOS"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
-
-################################################################################
-##########                      NOVO EPISÓDIO RECENTE ADICIONADO:     ##########
-################################################################################
-#Arquivo: 04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml
-
-recent_days_fresh_espisode_added: 10
-#create_recent_new_episode_added_overlay_yaml
-
-backdrop_recent_new_episode_added:
-  enable: true
-  back_color: "#EB3233" #VERMELHO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_recent_new_episode_added:
-  use_text: "EPISÓDIO NOVO"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
-
-################################################################################
-##########                      NOVA TEMPORADA ADICIONADA:            ##########
-################################################################################
-#Arquivo: 05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml
-
-recent_days_new_season_added: 10
-#create_new_season_added_overlay_yaml
-#create_new_season_added_overlay_yaml
-backdrop_new_season_added:
-  enable: true
-  back_color: "#EB3233" #VERMELHO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_new_season_added:
-  use_text: "TEMPORADA ATUALIZADA"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
-
-################################################################################
-##########                         NOVO SERIADO:                      ##########
-################################################################################
-#Arquivo: 06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml
-
-recent_days_new_show: 15
-#create_new_show_overlay_yaml
-backdrop_new_show:
-  enable: true
-  back_color: "#EB3233" #VERMELHO
-  back_height: 90
-  back_width: 1000
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 0
-
-text_new_show:
-  use_text: "ADICIONADO RECENTEMENTE"
-  horizontal_align: center
-  horizontal_offset: 0
-  vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
-  font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
-
-#############################OVERLAY NIVEL TEMPORADA############################
-#############################INSERIDAS NA TEMPORADA#############################
 
 ################################################################################
 ##########                ESPISODIO ADICIONADO A TEMPORADA            ##########
 ################################################################################
-#Arquivo: 13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
+#############################OVERLAY NIVEL TEMPORADA############################
+#############################INSERIDAS NA TEMPORADA#############################
+#Arquivo: 01_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
 
 recent_days_episode_on_season: 7
-#create_episode_on_season_overlay_yaml
+
 backdrop_episode_season:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
+  group: backdrop_temporada
+  weight: 1
+  
 
 text_episode_season:
   use_text: "NOVOS EPISÓDIOS"
@@ -454,26 +487,29 @@ text_episode_season:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
+  group: text_temporada
+  weight: 1
 
 
 ################################################################################
 ##########             ESPISODIO NOVO ADICIONADO A TEMPORADA          ##########
 ################################################################################
-#Arquivo: 14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
+#Arquivo: 02_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
 
 recent_days_new_episode_on_season: 10
-#create_new_episode_on_season_overlay_yaml
+
 backdrop_new_episode_season:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_temporada
+  weight: 2
+  
 text_new_episode_season:
   use_text: "EPISÓDIO NOVO"
   horizontal_align: center
@@ -482,26 +518,29 @@ text_new_episode_season:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
+  group: text_temporada
+  weight: 2
 
 
 ################################################################################
 ##########                      TEMPORADA ADICIONADA                  ##########
 ################################################################################
-#Arquivo: 15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml
+#Arquivo: 03_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml
 
 recent_days_season_added: 10
 #create_season_added_overlay_yaml
 backdrop_season_added:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_temporada
+  weight: 3
+  
 text_season_added:
   use_text: "ADICIONADA RECENTEMENTE"
   horizontal_align: center
@@ -510,24 +549,27 @@ text_season_added:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
+  group: text_temporada
+  weight: 3
 
 ################################################################################
 ##########                    TEMPORADA RECÉM-LANÇADA                 ##########
 ################################################################################
-#Arquivo: 16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml
+#Arquivo: 04_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml
 recent_days_new_season_released: 10
-#create_new_season_released_overlay_yaml
+
 backdrop_new_season_released:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_temporada
+  weight: 4
+  
 text_new_season_released:
   use_text: "NOVA TEMPORADA"
   horizontal_align: center
@@ -536,28 +578,30 @@ text_new_season_released:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
+  group: text_temporada
+  weight: 4
 
 #############################OVERLAY NIVEL EPISÓDIO############################
 #############################INSERIDAS NO EPISÓDIO#############################
-
 ################################################################################
 ##########                       EPISÓDIO ADICIONADO                  ##########
 ################################################################################
-#Arquivo: 17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml
+#Arquivo: 01_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml
 
 recent_days_episode_added: 7
-#create_episode_added_overlay_yaml
+
 backdrop_episode_added:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_episodio
+  weight: 1
+  
 text_episode_added:
   use_text: "ADICIONADO RECENTEMENTE"
   horizontal_align: center
@@ -566,26 +610,28 @@ text_episode_added:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada.
+  group: text_episodio
+  weight: 1
 
 ################################################################################
 ##########                       EPISÓDIO ADICIONADO                  ##########
 ################################################################################
-#Arquivo: 18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml
+#Arquivo: 02_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml
 
 recent_days_new_episode_released: 10
 
-#create_new_episode_released_overlay_yaml
 backdrop_new_episode_released:
   enable: true
-  back_color: "#EB3233" #VERMELHO
+  back_color: "#E5091480" #VERMELHO
   back_height: 90
   back_width: 1000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
   vertical_offset: 0
-
+  group: backdrop_episodio
+  weight: 2
+  
 text_new_episode_released:
   use_text: "EPISÓDIO NOVO"
   horizontal_align: center
@@ -594,4 +640,5 @@ text_new_episode_released:
   vertical_offset: 15
   font_size: 65
   font_color: "#FFFFFF" #BRANCO
-#font: Ajuste com a fonte dessejada
+  group: text_episodio
+  weight: 2

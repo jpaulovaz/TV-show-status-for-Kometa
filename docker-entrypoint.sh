@@ -1,5 +1,28 @@
 #!/bin/bash
-# Adiciona um usuário não root non-root
+
+# --- Função de Rotação de Logs ---
+rotate_logs() {
+    LOG_DIR="/app/config/logs"
+    LOG_FILE="$LOG_DIR/tssk.log"
+    MAX_LOGS=5
+
+    mkdir -p "$LOG_DIR"
+
+    # Rotaciona os logs apenas se o arquivo principal existir
+    if [ -f "$LOG_FILE" ]; then
+        # Remove o log mais antigo
+        rm -f "$LOG_DIR/tssk-$MAX_LOGS.log"
+        # Renomeia os logs existentes
+        for i in $(seq $((MAX_LOGS - 1)) -1 1); do
+            if [ -f "$LOG_DIR/tssk-$i.log" ]; then
+                mv "$LOG_DIR/tssk-$i.log" "$LOG_DIR/tssk-$((i+1)).log"
+            fi
+        done
+        mv "$LOG_FILE" "$LOG_DIR/tssk-1.log"
+    fi
+}
+export -f rotate_logs # Exporta a função para que o cron possa usá-la
+
 # Cria a pasta /app/config se não existir
 mkdir -p /app/config/kometa/tssk
 
@@ -25,7 +48,7 @@ echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
 # Priorizar a variável HORARIOS_DE_EXECUCAO para horários em formato "normal"
 if [ -n "$CRON" ]; then
     echo "Configurando agendamento a partir de CRON: $CRON"
-    echo "$CRON appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /var/log/cron.log 2>&1" >> /etc/cron.d/tssk-cron
+    echo "$CRON appuser bash -c 'rotate_logs && source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /app/config/logs/tssk.log 2>&1'" >> /etc/cron.d/tssk-cron
     
 elif [ -n "$HORARIOS_DE_EXECUCAO" ]; then
     echo "Configurando agendamentos diários a partir de HORARIOS_DE_EXECUCAO: $HORARIOS_DE_EXECUCAO"
@@ -38,7 +61,7 @@ elif [ -n "$HORARIOS_DE_EXECUCAO" ]; then
         if [[ "$time_str" =~ ^([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])$ ]]; then
             HOUR=${BASH_REMATCH[1]}
             MINUTE=${BASH_REMATCH[2]}
-            echo "$MINUTE $HOUR * * * appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /var/log/cron.log 2>&1" >> /etc/cron.d/tssk-cron
+            echo "$MINUTE $HOUR * * * appuser bash -c 'rotate_logs && source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /app/config/logs/tssk.log 2>&1'" >> /etc/cron.d/tssk-cron
             echo "  - Tarefa cron adicionada para: $time_str"
         else
             echo "  - Aviso: Formato de hora inválido '$time_str' em HORARIOS_DE_EXECUCAO. Esperado HH:MM. Ignorando."
@@ -51,16 +74,17 @@ fi
 
 chmod 0644 /etc/cron.d/tssk-cron
 
-# Alterações de permissão para o usuário do cron
-touch /var/log/cron.log
-chown "${PUID}:${PGID}" /var/log/cron.log
+# Cria o diretório de logs e o arquivo inicial para o tail funcionar
+mkdir -p /app/config/logs
+touch /app/config/logs/tssk.log
+chown -R "${PUID}:${PGID}" /app/config/logs
 
 # Verifica se a variável EXECUTAR_AO_INICIAR está definida como "true" (ignora maiúsculas/minúsculas)
 if [[ "${EXECUTAR_AO_INICIAR,,}" == "true" ]]; then
     echo "Executando o script imediatamente na inicialização (EXECUTAR_AO_INICIAR=true)..."
-    su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /var/log/cron.log 2>&1" appuser &
+    su -s /bin/bash -c "rotate_logs && source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /app/config/logs/tssk.log 2>&1" appuser &
 fi
 
 # --- Inicia o Cron e o Log --- #
 cron -f &
-exec tail -f /var/log/cron.log
+exec tail -f /app/config/logs/tssk.log
