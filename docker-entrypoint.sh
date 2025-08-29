@@ -87,4 +87,5 @@ fi
 
 # --- Inicia o Cron e o Log --- #
 cron -f &
-exec tail -f /app/config/logs/tssk.log
+echo "Monitorando o arquivo de log em /app/config/logs/tssk.log..."
+exec tail -F /app/config/logs/tssk.log
