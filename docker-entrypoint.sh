@@ -25,7 +25,7 @@ echo "SHELL=/bin/bash" >> /etc/cron.d/tssk-cron
 # Priorizar a variável HORARIOS_DE_EXECUCAO para horários em formato "normal"
 if [ -n "$CRON" ]; then
     echo "Configurando agendamento a partir de CRON: $CRON"
-    echo "$CRON appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
+    echo "$CRON appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /var/log/cron.log 2>&1" >> /etc/cron.d/tssk-cron
     
 elif [ -n "$HORARIOS_DE_EXECUCAO" ]; then
     echo "Configurando agendamentos diários a partir de HORARIOS_DE_EXECUCAO: $HORARIOS_DE_EXECUCAO"
@@ -38,7 +38,7 @@ elif [ -n "$HORARIOS_DE_EXECUCAO" ]; then
         if [[ "$time_str" =~ ^([0-1]?[0-9]|2[0-3]):([0-5]?[0-9])$ ]]; then
             HOUR=${BASH_REMATCH[1]}
             MINUTE=${BASH_REMATCH[2]}
-            echo "$MINUTE $HOUR * * * appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" >> /etc/cron.d/tssk-cron
+            echo "$MINUTE $HOUR * * * appuser source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /var/log/cron.log 2>&1" >> /etc/cron.d/tssk-cron
             echo "  - Tarefa cron adicionada para: $time_str"
         else
             echo "  - Aviso: Formato de hora inválido '$time_str' em HORARIOS_DE_EXECUCAO. Esperado HH:MM. Ignorando."
@@ -58,7 +58,7 @@ chown "${PUID}:${PGID}" /var/log/cron.log
 # Verifica se a variável EXECUTAR_AO_INICIAR está definida como "true" (ignora maiúsculas/minúsculas)
 if [[ "${EXECUTAR_AO_INICIAR,,}" == "true" ]]; then
     echo "Executando o script imediatamente na inicialização (EXECUTAR_AO_INICIAR=true)..."
-    su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py 2>&1 | tee -a /var/log/cron.log" appuser &
+    su -s /bin/bash -c "source /app/.cron_env && cd /app && /usr/local/bin/python TSSK.py >> /var/log/cron.log 2>&1" appuser &
 fi
 
 # --- Inicia o Cron e o Log --- #

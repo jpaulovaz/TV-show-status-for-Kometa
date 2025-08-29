@@ -4,18 +4,21 @@ from datetime import datetime, timedelta, timezone
 import pytz
 from collections import defaultdict
 import sys
-if sys.version_info >= (3, 7):
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 import os
 import functools
-print = functools.partial(print, flush=True)
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 overlay_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 collection_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 VERSION = "3.3.1"
+
+if sys.version_info >= (3, 7):
+    import io
+    # Em Docker (IS_DOCKER=True), força a saída não-bufferizada (write_through=True) para logs em tempo real.
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', write_through=IS_DOCKER)
+
+print = functools.partial(print, flush=True)
 
 # ANSI color codes
 VERDE = '\033[32m'
