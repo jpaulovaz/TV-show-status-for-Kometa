@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - teste
+      - desenvolvimento
 
 jobs:
   build_and_push:
@@ -28,4 +28,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/tssk:teste
+          tags: ${{ secrets.DOCKER_USERNAME }}/tssk:desenvolvimento
