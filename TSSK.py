@@ -6,6 +6,7 @@ from collections import defaultdict
 import sys
 import os
 import functools
+import re
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
@@ -27,6 +28,10 @@ AZUL = '\033[34m'
 VERMELHO = '\033[31m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
+
+def strip_ansi_codes(text):
+    ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+    return ansi_escape.sub('', text)
  
 #Exibe as informações das variaveis DOCKER, se docker.
 if IS_DOCKER:
@@ -190,7 +195,9 @@ def get_all_data_from_sonarr(sonarr_url, api_key):
 
     for i, series in enumerate(all_series):
         # Mostra o progresso
-        print(f"{VERDE}  -> Buscando episódios: {i + 1} de {total_series} - {series['title']}{RESET}".ljust(80), end='\r')
+        progress_text = f"{VERDE}  -> Buscando episódios: {i + 1} de {total_series} - {series['title']}{RESET}"
+        padding = ' ' * (80 - len(strip_ansi_codes(progress_text)))
+        print(progress_text + padding, end='\r')
         try:
             episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
             series['episodes'] = episodes
@@ -511,7 +518,9 @@ def find_ended_shows(all_series_with_episodes, tmdb_api_key=None):
         show_dict = {"title": series["title"], "tvdbId": tvdb_id}
 
         # Adiciona a impressão de progresso, limpando a linha anterior
-        print(f"{VERDE}  -> Verificando {i + 1} de {total_to_check}: {series['title']}{RESET}".ljust(80), end='\r')
+        progress_text = f"{VERDE}  -> Verificando {i + 1} de {total_to_check}: {series['title']}{RESET}"
+        padding = ' ' * (80 - len(strip_ansi_codes(progress_text)))
+        print(progress_text + padding, end='\r')
 
         tmdb_status = get_tmdb_status(tvdb_id, tmdb_api_key)
         if tmdb_status and "cancel" in tmdb_status.lower():
@@ -521,8 +530,9 @@ def find_ended_shows(all_series_with_episodes, tmdb_api_key=None):
     
     # Limpa a linha de progresso ao final
     if total_to_check > 0:
-        # Pula para a próxima linha para não sobrescrever a última linha de progresso
-        print()
+        # Limpa a linha de progresso e imprime uma mensagem de conclusão para consistência
+        print(" " * 80, end="\r")
+        print(f"{VERDE}Verificação no TMDB concluída.{RESET}")
     return ended_shows, cancelled_shows
 
 def find_returning_shows(all_series_with_episodes, excluded_tvdb_ids):
