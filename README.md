@@ -137,8 +137,9 @@ services:
     network_mode: bridge
 ```
 > [!TIP]
-> Você pode informar os horários que deseja que o script seja executado, ou informar o CRON que deseja, mas o CRON tem prioridade em relação aos Horários de Execução. 
-> Você pode também executar o script imediatamente ao iniciar informando true em `EXECUTAR_AO_INICIAR`.
+> * Você pode informar os horários que deseja que o script seja executado, ou informar o CRON que deseja, mas o CRON tem prioridade em relação aos Horários de Execução. 
+> * Você pode também executar o script imediatamente ao iniciar informando true em `EXECUTAR_AO_INICIAR`.
+> * Você pode também forçar a execução do script através do terminal usando `docker exec -it tssk python TSSK.py` e acompanhar o progresso diretamente na tela do terminal.
 ---
 
 ### 🧩 Continue a configuração
