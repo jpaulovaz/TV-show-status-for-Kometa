@@ -4,18 +4,21 @@ from datetime import datetime, timedelta, timezone
 import pytz
 from collections import defaultdict
 import sys
-if sys.version_info >= (3, 7):
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 import os
 import functools
-print = functools.partial(print, flush=True)
 
 # Constants
 IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 overlay_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 collection_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
-VERSION = "3.0.0"
+VERSION = "3.3.1"
+
+if sys.version_info >= (3, 7):
+    import io
+    # Em Docker (IS_DOCKER=True), força a saída não-bufferizada (write_through=True) para logs em tempo real.
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', write_through=IS_DOCKER)
+
+print = functools.partial(print, flush=True)
 
 # ANSI color codes
 VERDE = '\033[32m'
@@ -24,17 +27,16 @@ AZUL = '\033[34m'
 VERMELHO = '\033[31m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
-
+ 
 #Exibe as informações das variaveis DOCKER, se docker.
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
-    puid = int(os.getenv("PUID", "1000"))
-    pgid = int(os.getenv("PGID", "1000"))
+    PUID = int(os.getenv("PUID", "1000"))
+    PGID = int(os.getenv("PGID", "1000"))
     TZ = os.getenv("TZ", "America/Sao_Paulo").upper()
     user_tz = pytz.timezone(TZ)
     print(f"{AZUL}{'*' * 40}\nDOCKER: {VERMELHO}{IS_DOCKER}")
-    print(f"{AZUL}PUID: {VERMELHO}{puid}")
-    print(f"{AZUL}PGID: {VERMELHO}{pgid}{AZUL}\n{'*' * 40}\n{RESET}")
+    print(f"{AZUL}PUID: {VERMELHO}{PUID}\n{AZUL}PGID: {VERMELHO}{PGID}{AZUL}\n{'*' * 40}\n{RESET}")
 
 def check_for_updates():
     print(f"{VERDE}Verificando atualizações para TSSK {VERSION}...")
@@ -64,19 +66,13 @@ def check_for_updates():
     except Exception as e:
         print(f"{LARANJA}Não foi possível verificar se há atualizações: {str(e)}{RESET}\n")
 
-def get_config_section(config, primary_key, fallback_keys=None):
-    if fallback_keys is None:
-        fallback_keys = []
-    
-    if primary_key in config:
-        return config[primary_key]
-    
-    for key in fallback_keys:
-        if key in config:
-            return config[key]
-    
-    return {}
-
+def set_permissions(path):
+    """Define a propriedade do arquivo se estiver rodando em Docker."""
+    if IS_DOCKER:
+        try:
+            os.chown(path, PUID, PGID)
+        except OSError as e:
+            print(f"{LARANJA}Não foi possível alterar o proprietário de {path}: {e}{RESET}")
 def load_config(file_path='config/config.yml'):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -137,7 +133,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
     try:
         # First call to find the TMDB id from the TVDB id
         find_url = (
-            f"https://api.themoviedb.org/3/find/{tvdb_id}?api_key="
+            f"http://api.themoviedb.org/3/find/{tvdb_id}?api_key="
             f"{tmdb_api_key}&external_source=tvdb_id"
         )
         resp = requests.get(find_url, timeout=10)
@@ -150,7 +146,7 @@ def get_tmdb_status(tvdb_id, tmdb_api_key):
         if not tmdb_id:
             return None
 
-        details_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
+        details_url = f"http://api.themoviedb.org/3/tv/{tmdb_id}?api_key={tmdb_api_key}"
         resp = requests.get(details_url, timeout=10)
         resp.raise_for_status()
         info = resp.json()
@@ -163,7 +159,7 @@ def get_sonarr_series(sonarr_url, api_key):
     try:
         url = f"{sonarr_url}/series"
         headers = {"X-Api-Key": api_key}
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=20)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -181,16 +177,40 @@ def get_sonarr_episodes(sonarr_url, api_key, series_id):
         print(f"{VERMELHO}Erro a busca de episódios de Sonarr: {str(e)}{RESET}")
         sys.exit(1)
 
-def find_new_season_shows(sonarr_url, api_key, future_days_new_season, utc_offset=0, skip_unmonitored=False):
+def get_all_data_from_sonarr(sonarr_url, api_key):
+    """
+    Busca todos os seriados e, em seguida, busca os episódios para cada um,
+    anexando-os ao objeto do seriado. Mostra o progresso.
+    """
+    print(f"\n{AZUL}--- Buscando dados do Sonarr ---{RESET}")
+    print(f"{AZUL}Buscando a lista de todos os seriados...{RESET}")
+    all_series = get_sonarr_series(sonarr_url, api_key)
+    total_series = len(all_series)
+    print(f"{AZUL}Buscando episódios para {total_series} seriados (isso pode levar um tempo)...{RESET}")
+
+    for i, series in enumerate(all_series):
+        # Mostra o progresso
+        print(f"{VERDE}  -> Buscando episódios: {i + 1} de {total_series} - {series['title']}{RESET}".ljust(80), end='\r')
+        try:
+            episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+            series['episodes'] = episodes
+        except Exception as e:
+            print(f"\n{LARANJA}Falha ao buscar episódios para {series['title']} (ID: {series['id']}): {e}{RESET}")
+            series['episodes'] = []  # Garante que a chave 'episodes' exista
+
+    # Limpa a linha de progresso
+    print(" " * 80, end='\r')
+    print(f"{VERDE}Busca de dados do Sonarr concluída.{RESET}")
+    return all_series
+
+def find_new_season_shows(all_series_with_episodes, future_days_new_season, utc_offset=0, skip_unmonitored=False):
     cutoff_date = datetime.now(timezone.utc) + timedelta(days=future_days_new_season)
     now_local = datetime.now(timezone.utc) + timedelta(hours=utc_offset)
     matched_shows = []
     skipped_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
-        episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+    for series in all_series_with_episodes:
+        episodes = series.get('episodes', [])
         
         future_episodes = []
         for ep in episodes:
@@ -273,17 +293,15 @@ def find_new_season_shows(sonarr_url, api_key, future_days_new_season, utc_offse
     
     return matched_shows, skipped_shows
 
-def find_upcoming_regular_episodes(sonarr_url, api_key, future_days_upcoming_episode, utc_offset=0, skip_unmonitored=False):
+def find_upcoming_regular_episodes(all_series_with_episodes, future_days_upcoming_episode, utc_offset=0, skip_unmonitored=False):
     """Find shows with upcoming non-premiere, non-finale episodes within the specified days"""
     cutoff_date = datetime.now(timezone.utc) + timedelta(days=future_days_upcoming_episode)
     now_local = datetime.now(timezone.utc) + timedelta(hours=utc_offset)
     matched_shows = []
     skipped_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
-        episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+    for series in all_series_with_episodes:
+        episodes = series.get('episodes', [])
         
         # Episódios de grupo por temporada
         seasons = defaultdict(list)
@@ -364,16 +382,14 @@ def find_upcoming_regular_episodes(sonarr_url, api_key, future_days_upcoming_epi
     
     return matched_shows, skipped_shows
 
-def find_upcoming_finales(sonarr_url, api_key, future_days_upcoming_finale, utc_offset=0, skip_unmonitored=False):
+def find_upcoming_finales(all_series_with_episodes, future_days_upcoming_finale, utc_offset=0, skip_unmonitored=False):
     """Encontrar shows com as próximas Fim de temporada nos dias especificados"""
     cutoff_date = datetime.now(timezone.utc) + timedelta(days=future_days_upcoming_finale)
     matched_shows = []
     skipped_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
-        episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+    for series in all_series_with_episodes:
+        episodes = series.get('episodes', [])
         
         # Agrupar Episódios por Temporada
         seasons = defaultdict(list)
@@ -454,17 +470,17 @@ def find_upcoming_finales(sonarr_url, api_key, future_days_upcoming_finale, utc_
     
     return matched_shows, skipped_shows
 
-def find_ended_shows(sonarr_url, api_key, tmdb_api_key=None):
+def find_ended_shows(all_series_with_episodes, tmdb_api_key=None):
     """Find shows that have ended and have no upcoming regular episodes (ignoring specials).
     Returns a tuple of (ended_shows, cancelled_shows)."""
     ended_shows = []
     cancelled_shows = []
 
-    all_series = get_sonarr_series(sonarr_url, api_key)
-
-    for series in all_series:
+    # Primeiro, filtre as séries que precisam ser verificadas no TMDB
+    series_to_check = []
+    for series in all_series_with_episodes:
         if series.get("status") == "ended":
-            episodes = get_sonarr_episodes(sonarr_url, api_key, series["id"])
+            episodes = series.get('episodes', [])
 
             has_future_regular_episodes = False
             for ep in episodes:
@@ -483,24 +499,37 @@ def find_ended_shows(sonarr_url, api_key, tmdb_api_key=None):
                         break
 
             if not has_future_regular_episodes:
-                tvdb_id = series.get("tvdbId")
-                show_dict = {"title": series["title"], "tvdbId": tvdb_id}
+                series_to_check.append(series)
 
-                tmdb_status = get_tmdb_status(tvdb_id, tmdb_api_key)
-                if tmdb_status and "cancel" in tmdb_status.lower():
-                    cancelled_shows.append(show_dict)
-                else:
-                    ended_shows.append(show_dict)
+    # Agora, processe a lista filtrada com indicação de progresso
+    total_to_check = len(series_to_check)
+    if total_to_check > 0:
+        print(f"\n{AZUL}Verificando status no TMDB para {total_to_check} seriados finalizados/cancelados...{RESET}")
 
+    for i, series in enumerate(series_to_check):
+        tvdb_id = series.get("tvdbId")
+        show_dict = {"title": series["title"], "tvdbId": tvdb_id}
+
+        # Adiciona a impressão de progresso, limpando a linha anterior
+        print(f"{VERDE}  -> Verificando {i + 1} de {total_to_check}: {series['title']}{RESET}".ljust(80), end='\r')
+
+        tmdb_status = get_tmdb_status(tvdb_id, tmdb_api_key)
+        if tmdb_status and "cancel" in tmdb_status.lower():
+            cancelled_shows.append(show_dict)
+        else:
+            ended_shows.append(show_dict)
+    
+    # Limpa a linha de progresso ao final
+    if total_to_check > 0:
+        # Pula para a próxima linha para não sobrescrever a última linha de progresso
+        print()
     return ended_shows, cancelled_shows
 
-def find_returning_shows(sonarr_url, api_key, excluded_tvdb_ids):
+def find_returning_shows(all_series_with_episodes, excluded_tvdb_ids):
     """Encontrar programas com status "continuado" que não estão em outras categorias"""
     matched_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
+    for series in all_series_with_episodes:
         # Verifique se o show tem status "continuado"
         if series.get('status') == 'continuing':
             tvdb_id = series.get('tvdbId')
@@ -518,24 +547,20 @@ def find_returning_shows(sonarr_url, api_key, excluded_tvdb_ids):
     
     return matched_shows
 
-def find_recent_season_finales(sonarr_url, api_key, recent_days_season_finale, utc_offset=0, skip_unmonitored=False):
+def find_recent_season_finales(all_series_with_episodes, recent_days_season_finale, utc_offset=0, skip_unmonitored=False):
     """Encontre shows com status 'continuando' que tinham um ar final da temporada dentro dos dias especificados ou um final futuro que já foi baixado"""
     now_local = datetime.now(timezone.utc) + timedelta(hours=utc_offset)
     cutoff_date = now_local - timedelta(days=recent_days_season_finale)
     matched_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
+    for series in all_series_with_episodes:
         # Inclua apenas shows contínuos
         if series.get('status') not in ['continuing', 'upcoming']:
             continue
-        
         # Pule os programas não monitorados se solicitados
         if skip_unmonitored and not series.get('monitored', True):
             continue
-            
-        episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+        episodes = series.get('episodes', [])
         
         # Episódios de grupo por temporada e encontre episódios baixados
         seasons = defaultdict(list)
@@ -617,24 +642,20 @@ def find_recent_season_finales(sonarr_url, api_key, recent_days_season_finale, u
     
     return matched_shows
 
-def find_recent_final_episodes(sonarr_url, api_key, recent_days_final_episode, utc_offset=0, skip_unmonitored=False):
+def find_recent_final_episodes(all_series_with_episodes, recent_days_final_episode, utc_offset=0, skip_unmonitored=False):
     """Encontre programas com status 'terminou' que tiveram seu episódio final nos dias especificados ou ter um futuro episódio final que já foi baixado"""
     now_local = datetime.now(timezone.utc) + timedelta(hours=utc_offset)
     cutoff_date = now_local - timedelta(days=recent_days_final_episode)
     matched_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
+    for series in all_series_with_episodes:
         # Inclua apenas shows finais
         if series.get('status') != 'ended':
             continue
-            
         # Pule os programas não monitorados se solicitados
         if skip_unmonitored and not series.get('monitored', True):
             continue
-            
-        episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+        episodes = series.get('episodes', [])
         
         # Episódios de grupo por temporada e encontre episódios baixados
         seasons = defaultdict(list)
@@ -735,20 +756,17 @@ def find_recent_final_episodes(sonarr_url, api_key, recent_days_final_episode, u
     
     return matched_shows
 
-def find_new_season_started(sonarr_url, api_key, recent_days_new_season_started, utc_offset=0, skip_unmonitored=False):
+def find_new_season_started(all_series_with_episodes, recent_days_new_season_started, utc_offset=0, skip_unmonitored=False):
     """Encontre programas onde uma nova temporada (não a primeira temporada) foi baixada dentro dos dias especificados"""
     now_local = datetime.now(timezone.utc) + timedelta(hours=utc_offset)
     cutoff_date = now_local - timedelta(days=recent_days_new_season_started)
     matched_shows = []
     
-    all_series = get_sonarr_series(sonarr_url, api_key)
-    
-    for series in all_series:
+    for series in all_series_with_episodes:
         # Pule os programas não monitorados se solicitados
         if skip_unmonitored and not series.get('monitored', True):
             continue
-            
-        episodes = get_sonarr_episodes(sonarr_url, api_key, series['id'])
+        episodes = series.get('episodes', [])
         
         # Episódios de grupo por temporada e encontre episódios baixados
         seasons = defaultdict(list)
@@ -890,7 +908,7 @@ def format_date(dd_mm_yyyy, date_format, capitalize=False):
         print(f"{VERMELHO}Erro: formato de data inválida '{date_format}'. Usando formato padrão.{RESET}")
         return dd_mm_yyyy  # Return original format as fallback
 
-def create_overlay_yaml(output_file, shows, config_sections):
+def create_overlay_yaml(output_file, shows, config_sections, no_date_needed=False, category_key="TSSK_overlay"):
     import yaml
     from copy import deepcopy
     from datetime import datetime
@@ -903,9 +921,6 @@ def create_overlay_yaml(output_file, shows, config_sections):
     # Group shows by date if available
     date_to_tvdb_ids = defaultdict(list)
     all_tvdb_ids = set()
-    
-    # Check if this is a category that doesn't need dates
-    no_date_needed = "FIM_TEMPORADA" in output_file or "EPISODIO_FINAL" in output_file or "NOVA_TEMPORADA_INICIADA" in output_file
     
     for s in shows:
         if s.get("tvdbId"):
@@ -962,22 +977,7 @@ def create_overlay_yaml(output_file, shows, config_sections):
             sub_overlay_config["name"] = f"text({use_text})"
             
             tvdb_ids_str = ", ".join(str(i) for i in sorted(all_tvdb_ids) if i)
-            
-            # Extract category name from filename
-            if "NOVA_TEMPORADA_INICIADA" in output_file:
-                block_key = "TSSK_nova_temporada_iniciada"
-            elif "FIM_TEMPORADA" in output_file:
-                block_key = "TSSK_final_de_temporada"
-            elif "EPISODIO_FINAL" in output_file:
-                block_key = "TSSK_episódio_final"
-            elif "FINALIZADOS" in output_file:
-                block_key = "TSSK_finalizados"
-            elif "RETORNANDO" in output_file:
-                block_key = "TSSK_retornando"
-            elif "CANCELADOS" in output_file:
-                block_key = "TSSK_cancelados"
-            else:
-                block_key = "TSSK_overlay"  # fallback
+            block_key = category_key
             
             overlays_dict[block_key] = {
                 "overlay": sub_overlay_config,
@@ -990,378 +990,86 @@ def create_overlay_yaml(output_file, shows, config_sections):
         yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
 #################################PLEX BASED CONFIG#################################
-        # ---- Episode Added ----
-def create_new_episode_added_overlay_yaml(output_file, config_sections, recent_days):
-    "Cria Overlay Para episódios adicionados recentemente, independente da exibição."
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
-            "run_definition": "show",
-            "builder_level": "show",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_added": recent_days }},
-            "overlay": backdrop_config
-        }
-    
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "NOVOS EPISÓDIOS")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["episodios_recen_adicionados_nv_seriado"] = {
-            "run_definition": "show",
-            "builder_level": "show",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_added": recent_days }},
-            "overlay": text_config
-        }
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
-        # ---- Recent New Episode Added ----
-def create_recent_new_episode_added_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para seriados com informação de episódio novo adicionado"""
+def filter_plex_config_yml(filter_config_section,recent_days=7):
     import yaml
     from copy import deepcopy
+    from datetime import datetime
+
+
+    if filter_config_section == "new_episode_added":
+        filter_config = {
+            "run_definition": "show",
+            "builder_level": "show",
+            "plex_search":{
+                "type": "episode",
+                "all":{
+                    "episode_added": recent_days }},
+       }
     
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "recent_new_episode_added":
+          filter_config = {
             "run_definition": "show",
             "builder_level": "show",
             "plex_search": {
                 "type": "episode",
                 "all":{
                     "episode_air_date": recent_days }},
-            "overlay": backdrop_config
         }
     
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
+    elif filter_config_section == "new_season_added":
+        filter_config = {
+        "run_definition": "show",
+        "builder_level": "show",
+        "plex_search": {
+            "type": "season",
+            "all":{
+                "added": recent_days,
+                "episode_air_date": int(recent_days)*2}},
+    }
     
-    if enable_text:
-        use_text = text_config.pop("use_text", "EPISÓDIO NOVO")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["episodios_novos_adicionados_nv_seriado"] = {
-            "run_definition": "show",
-            "builder_level": "show",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_air_date": recent_days }},
-            "overlay": text_config
-        }
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
-
-        # ---- Recent New Season Added ----
-def create_new_season_added_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para com nova temporada"""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
-            "run_definition": "show",
-            "builder_level": "show",
-            "plex_search": {
-                "type": "season",
-                "all":{
-                    "added": recent_days,
-                    "episode_air_date": int(recent_days)*2}},
-            "overlay": backdrop_config
-        }
-    
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "TEMPORADA ATUALIZADA")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["nova_temporada_adicionada_nv_seriado"] = {
-            "run_definition": "show",
-            "builder_level": "show",
-            "plex_search": {
-                "type": "season",
-                "all":{
-                    "added": recent_days,
-                    "episode_air_date": int(recent_days)*2}},
-            "overlay": text_config
-        }
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
-
-        # ---- New Show ----
-def create_new_show_overlay_yaml(output_file, config_sections, recent_days):
-    """Create overlay YAML for new shows using Plex filters instead of Sonarr data"""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "new_show":
+        filter_config = {
             "run_definition": "show",
             "builder_level": "show",
             "plex_search": {
                 "type": "show",
                 "all":{
                     "added": recent_days}},
-            "overlay": backdrop_config
-        }
+        }    
     
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "ADICIONADO RECENTEMENTE")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["seriado_adicionado_recentemente_nv_seriado"] = {
-            "run_definition": "show",
-            "builder_level": "show",
-            "plex_search": {
-                "type": "show",
-                "all":{
-                    "added": recent_days}},
-            "overlay": text_config
-        }
-    
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
-
-
-        # ---- Season depth Episode Added ----
-def create_episode_on_season_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para temporadas com episódio adicionados."""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "episode_season":
+        filter_config = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
                 "type": "episode",
                 "all":{
                     "episode_added": recent_days}},
-            "overlay": backdrop_config
-        }
+        }    
     
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "NOVOS EPISÓDIOS")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["episodio_adicionado_temporada_nv_temporada"] = {
-            "run_definition": "show",
-            "builder_level": "season",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_added": recent_days}},
-            "overlay": text_config
-        }
-    
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
-
-        # ---- Season depth New Episode ----
-def create_new_episode_on_season_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para temporadas com episódio novo adicionados."""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "new_episode_season":
+        filter_config = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
                 "type": "episode",
                 "all":{
                     "episode_air_date": recent_days}},
-            "overlay": backdrop_config
-        }
-    
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "EPISÓDIO NOVO")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["episodio_novo_temporada_nv_temporada"] = {
-            "run_definition": "show",
-            "builder_level": "season",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_air_date": recent_days}},
-            "overlay": text_config
-        }
-    
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
+        }    
 
-        # ---- Season depth Added Season ----
-def create_season_added_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para temporadas adicionadas Recentemente."""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "season_added":
+        filter_config = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
                 "type": "season",
                 "all":{
                     "added": recent_days}},
-            "overlay": backdrop_config
         }
-    
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "ADICIONADA RECENTEMENTE")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["temporada_adicionada_nv_temporada"] = {
-            "run_definition": "show",
-            "builder_level": "season",
-            "plex_search": {
-                "type": "season",
-                "all":{
-                    "added": recent_days}},
-            "overlay": text_config
-        }
-    
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
-        # ---- Season depth New Added Season ----
-def create_new_season_released_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para Nova temporadas adicionadas."""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "new_season_released":
+        filter_config = {
             "run_definition": "show",
             "builder_level": "season",
             "plex_search": {
@@ -1369,146 +1077,76 @@ def create_new_season_released_overlay_yaml(output_file, config_sections, recent
                 "all":{
                     "added": recent_days,
                     "episode_air_date": int(recent_days)*2}},
-            "overlay": backdrop_config
         }
     
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "NOVA TEMPORADA")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["nova_temporada_adicionada_nv_temporada"] = {
-            "run_definition": "show",
-            "builder_level": "season",
-            "plex_search": {
-                "type": "season",
-                "all":{
-                    "added": recent_days,
-                    "episode_air_date": int(recent_days)*2}},
-            "overlay": text_config
-        }
-    
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
-
-        # ---- Episode depth episode added ----
-def create_episode_added_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para Episódios adicionados."""
-    import yaml
-    from copy import deepcopy
-    
-    overlays_dict = {}
-    
-    # -- Backdrop Block --
-    backdrop_config = deepcopy(config_sections.get("backdrop", {}))
-    enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
-        backdrop_config["name"] = "backdrop"
-        overlays_dict["backdrop"] = {
+    elif filter_config_section == "episode_added":
+        filter_config = {
             "run_definition": "show",
             "builder_level": "episode",
             "plex_search": {
                 "type": "episode",
                 "all":{
                     "episode_added": recent_days}},
-            "overlay": backdrop_config
         }
-    
-    # -- Text Block --
-    text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
-    
-    if enable_text:
-        use_text = text_config.pop("use_text", "ADICIONADO RECENTEMENTE")
-        text_config.pop("date_format", None)  # Remove if present
-        text_config.pop("capitalize_dates", None)  # Remove if present
-        
-        text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["episodio_adicionado_nv_episodio"] = {
+
+    elif filter_config_section == "new_episode_released":
+        filter_config =  {
             "run_definition": "show",
             "builder_level": "episode",
             "plex_search": {
                 "type": "episode",
                 "all":{
-                    "episode_added": recent_days}},
-            "overlay": text_config
+                    "episode_air_date": recent_days}},
         }
-    
-    
-    final_output = {"overlays": overlays_dict}
-    
-    with open(output_file, "w", encoding="utf-8") as f:
-        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
+    return filter_config
 
-        # ---- Episode depth New episode added ----
-def create_new_episode_released_overlay_yaml(output_file, config_sections, recent_days):
-    """Cria Overlay para Novos Episódios adicionados."""
+def create_plex_overlay_yaml(output_file, config_sections,filter_config=""):
     import yaml
     from copy import deepcopy
+    from datetime import datetime
     
     overlays_dict = {}
-    
     # -- Backdrop Block --
     backdrop_config = deepcopy(config_sections.get("backdrop", {}))
+    # Extract enable flag and default to True if not specified
     enable_backdrop = backdrop_config.pop("enable", True)
-    
-    if enable_backdrop:
+
+    # Only add backdrop overlay if enabled
+    if enable_backdrop :
         backdrop_config["name"] = "backdrop"
         overlays_dict["backdrop"] = {
-            "run_definition": "show",
-            "builder_level": "episode",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_air_date": recent_days}},
-            "overlay": backdrop_config
-        }
-    
-    # -- Text Block --
+            **deepcopy(filter_config),
+            "overlay": backdrop_config,
+             }
+    # -- Text Blocks --
+
+
     text_config = deepcopy(config_sections.get("text", {}))
-    enable_text = text_config.pop("enable", True)
+    enable_text = text_config.pop("enable", "True")
     
     if enable_text:
-        use_text = text_config.pop("use_text", "EPISÓDIO NOVO")
+        use_text = text_config.pop("use_text", "NOVIDADE")
         text_config.pop("date_format", None)  # Remove if present
         text_config.pop("capitalize_dates", None)  # Remove if present
         
         text_config["name"] = f"text({use_text})"
-        
-        overlays_dict["novo_episodio_adicionado_nv_episodio"] = {
-            "run_definition": "show",
-            "builder_level": "episode",
-            "plex_search": {
-                "type": "episode",
-                "all":{
-                    "episode_air_date": recent_days}},
-            "overlay": text_config
-        }
-    
+
+        block_key = f"TSSK_{use_text.replace(' ', '_')}"
+        overlays_dict[block_key] = {
+            **deepcopy(filter_config),
+            "overlay": text_config,
+             }
+
     final_output = {"overlays": overlays_dict}
     
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
-##############################END PLEX BASED CONFIG##############################
+    
+################################# END PLEX BASED CONFIG#################################
 
 def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_one=False,generate_all_in_one_overlays=False):
     """
     Combina arquivos YML de overlays em um único arquivo chamado TSSK_TV_ALL_OVERLAYS_TOGETHER.yml.
-
-    Args:
-        is_docker (bool): Indica se o script está sendo executado em um ambiente Docker.
-        overlay_path (str): O caminho do diretório dos overlays se estiver no Docker.
     """
     print(f"\n{AZUL}Iniciando a concatenação dos arquivos de overlays...{RESET}")
     output_file_name = "TSSK_TV_ALL_OVERLAYS_TOGETHER.yml" #Não pode terminar com OVERLAY.yml para evitar loop infito das informações.
@@ -1556,9 +1194,8 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
                 print(f"{VERMELHO}Erro ao processar o arquivo {file_path}: {e}{RESET}")
                 continue
             
-            line_count += 1
-    if IS_DOCKER:
-        os.chown(os.path.join(overlay_path, output_file_name), puid, pgid)
+            line_count += 1    
+    set_permissions(os.path.join(overlay_path, output_file_name))
                 
     print(f"Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}\n")
     
@@ -1573,7 +1210,7 @@ def concatenate_overlays(is_docker, overlay_path="",delete_overlay_after_all_in_
             except OSError as e:
                 print(f"{VERMELHO}Erro ao tentar deletar o arquivo {file_name}: {e}{RESET}")
 
-def create_collection_yaml(output_file, shows, config):
+def create_collection_yaml(output_file, shows, config, config_key, summary):
     import yaml
     from yaml.representer import SafeRepresenter
     from copy import deepcopy
@@ -1588,39 +1225,6 @@ def create_collection_yaml(output_file, shows, config):
     # Determine collection type and get the appropriate config section
     collection_config = {}
     collection_name = ""
-    
-    if "FIM_TEMPORADA" in output_file:
-        config_key = "collection_season_finale"
-        summary = f"Seriados com um final de temporada que foi ao ar nós últimos {config.get('recent_days_season_finale', 21)} dias"
-    elif "EPISODIO_FINAL" in output_file:
-        config_key = "collection_final_episode"
-        summary = f"Seriados com um episódio final que foi ao ar nós últimos {config.get('recent_days_final_episode', 21)} dias"
-    elif "NOVA_TEMPORADA_INICIADA" in output_file:
-        config_key = "collection_new_season_started"
-        summary = f"Seriados com uma nova temporada que começou no passado {config.get('recent_days_new_season_started', 14)} days"
-    elif "NOVA_TEMPORADA" in output_file:
-        config_key = "collection_new_season"
-        summary = f"Seriados com uma nova temporada começando dentro {config.get('future_days_new_season', 31)} days"
-    elif "PROXIMOS_EPISODIOS" in output_file:
-        config_key = "collection_upcoming_episode"
-        summary = f"Seriados com um próximo episódio dentro {config.get('future_days_upcoming_episode', 31)} days"
-    elif "PROXIMOS_FINAIS" in output_file:
-        config_key = "collection_upcoming_finale"
-        summary = f"Seriados com um final de temporada dentro de {config.get('future_days_upcoming_finale', 31)} days"
-    elif "FINALIZADOS" in output_file:
-        config_key = "collection_ended"
-        summary = "Seriados que já foram Finalizados."
-    elif "CANCELADOS" in output_file:
-        config_key = "collection_cancelled"
-        summary = "Seriados que foram cancelados."
-    elif "RETORNANDO" in output_file:
-        config_key = "collection_returning"
-        summary = "Seriados que tiveram seu retorno confirmado"
-    else:
-        # Default fallback
-        config_key = None
-        collection_name = "colecao_de_seriados"
-        summary = "Coleção de Seriados"
     
     # Get the collection configuration if available
     if config_key and config_key in config:
@@ -1731,10 +1335,6 @@ def create_collection_yaml(output_file, shows, config):
 def concatenate_collections(is_docker, collection_path="",delete_collections_after_all_in_one=False,generate_all_in_one_collections=False):
     """ 
     Combina arquivos YML de coleção em um único arquivo chamado TSSK_ALL_COLLECTIONS_TOGETHER.yml.
-
-    Args:
-        is_docker (bool): Indica se o script está sendo executado em um ambiente Docker.
-        collection_path (str): O caminho do diretório dos collection se estiver no Docker.
     """
     print(f"\n{AZUL}Iniciando a concatenação dos arquivos de coleção...{RESET}")
     output_file_name = "TSSK_ALL_COLLECTIONS_TOGETHER.yml" #Não pode terminar com collection.yml para evitar loop infito das informações.
@@ -1770,8 +1370,7 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
             except Exception as e:
                 print(f"{VERMELHO}Erro ao processar o arquivo {file_path}: {e}{RESET}")
                 continue
-    if IS_DOCKER:
-        os.chown(os.path.join(collection_path, output_file_name), puid, pgid)   
+    set_permissions(os.path.join(collection_path, output_file_name))
            
     print(f"Todos os arquivos foram combinados em {output_file_name} com sucesso!{RESET}\n")
     
@@ -1785,6 +1384,119 @@ def concatenate_collections(is_docker, collection_path="",delete_collections_aft
                 print(f"{VERDE}Arquivo {file_name} deletado com sucesso.{RESET}")
             except OSError as e:
                 print(f"{VERMELHO}Erro ao tentar deletar o arquivo {file_name}: {e}{RESET}")
+
+def process_plex_overlays(config):
+    print(f"\n{AZUL}--- Iniciando geração de Overlays baseadas no Plex ---{RESET}")
+    
+    # ---- New Episode Added ----
+    recent_days_new_episode_added = config.get('recent_days_new_episode_added', 7)
+    filter_config = filter_plex_config_yml("new_episode_added", recent_days_new_episode_added)
+    output_file = overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_new_episode_added"),
+                                "text": config.get("text_new_episode_added")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay Criada para série Que Tiveram um episódio adicionado recentemente em até {recent_days_new_episode_added} dias{RESET}")
+
+    # ---- Fresh New Episode Added ----
+    recent_days_fresh_espisode_added = config.get('recent_days_fresh_espisode_added', 7)
+    filter_config = filter_plex_config_yml("recent_new_episode_added", recent_days_fresh_espisode_added)
+    output_file = overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_recent_new_episode_added"),
+                                "text": config.get("text_recent_new_episode_added")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado recentemente em até {recent_days_fresh_espisode_added} dias{RESET}")
+
+    # ---- Fresh New Season Added ----
+    recent_days_new_season_added = config.get('recent_days_new_season_added', 7)
+    filter_config = filter_plex_config_yml("new_season_added", recent_days_new_season_added)
+    output_file = overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_new_season_added"),
+                                "text": config.get("text_new_season_added")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado a temporada recentemente em até {recent_days_new_season_added} dias{RESET}")
+
+    # ---- New Show ----
+    recent_days_new_show = config.get('recent_days_new_show', 7)
+    filter_config = filter_plex_config_yml("new_show", recent_days_new_show)
+    output_file = overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_new_show"),
+                                "text": config.get("text_new_show")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay de show criada para shows adicionados {recent_days_new_show} passados{RESET}")
+
+    # ---- Added Episode Season - Season depth ----
+    recent_days_episode_on_season = config.get('recent_days_episode_on_season', 7)
+    filter_config = filter_plex_config_yml("episode_season", recent_days_episode_on_season)
+    output_file = overlay_path + "01_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_episode_season"),
+                                "text": config.get("text_episode_season")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay para temporada com episódio adicionado nos últimos {recent_days_episode_on_season} dias{RESET}")
+
+    # ---- Added New Episode Season - Season depth ----
+    recent_days_new_episode_on_season = config.get('recent_days_new_episode_on_season', 7)
+    filter_config = filter_plex_config_yml("new_episode_season", recent_days_new_episode_on_season)
+    output_file = overlay_path + "02_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_new_episode_season"),
+                                "text": config.get("text_new_episode_season")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay para temporada com episódio Novo adicionadonos últimos {recent_days_new_episode_on_season} dias{RESET}")
+
+    # ---- Added Season - Season depth ----
+    recent_days_season_added = config.get('recent_days_season_added', 7)
+    filter_config = filter_plex_config_yml("season_added", recent_days_season_added)
+    output_file = overlay_path + "03_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_season_added"),
+                                "text": config.get("text_season_added")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay para temporada adicionada nos últimos {recent_days_season_added} dias{RESET}")
+
+    # ---- Temporada Recém-Lancada - Season depth ----
+    recent_days_new_season_released = config.get('recent_days_new_season_released', 7)
+    filter_config = filter_plex_config_yml("new_season_released", recent_days_new_season_released)
+    output_file = overlay_path + "04_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_new_season_released"),
+                                "text": config.get("text_new_season_released")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay para Nova temporada adicionada nos últimos {recent_days_new_season_released} dias{RESET}")
+
+    # ---- Episódio Recém-Adicionado - Episode depth ----
+    recent_days_episode_added = config.get('recent_days_episode_added', 7)
+    filter_config = filter_plex_config_yml("episode_added", recent_days_episode_added)
+    output_file = overlay_path + "01_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_episode_added"),
+                                "text": config.get("text_episode_added")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_episode_added} dias{RESET}")
+
+    # ---- Episódio Recém-Lançado - Episode depth ----
+    recent_days_new_episode_released = config.get('recent_days_new_episode_released', 7)
+    filter_config = filter_plex_config_yml("new_episode_released", recent_days_new_episode_released)
+    output_file = overlay_path + "02_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml"
+    create_plex_overlay_yaml(output_file,
+                               {"backdrop": config.get("backdrop_new_episode_released"),
+                                "text": config.get("text_new_episode_released")},
+                               filter_config)
+    set_permissions(output_file)
+    print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_new_episode_released} days{RESET}")
 
 #PROCEDIMENTO PRINCIPAL
 def main():
@@ -1804,11 +1516,10 @@ def main():
         
         # Get category-specific future_days values, with fallback to main future_days
         future_days = config.get('future_days', 14)
-        future_days_new_season = config.get('future_days_new_season', future_days)
-        future_days_upcoming_episode = config.get('future_days_upcoming_episode', future_days)
-        future_days_upcoming_finale = config.get('future_days_upcoming_finale', future_days)
-        
-        # Get recent days values
+        future_days_new_season = int(config.get('future_days_new_season', future_days))
+        future_days_upcoming_episode = int(config.get('future_days_upcoming_episode', future_days))
+        future_days_upcoming_finale = int(config.get('future_days_upcoming_finale', future_days))
+
         recent_days_season_finale = config.get('recent_days_season_finale', 14)
         recent_days_final_episode = config.get('recent_days_final_episode', 14)
         recent_days_new_season_started = config.get('recent_days_new_season_started', 7)
@@ -1822,39 +1533,26 @@ def main():
         recent_days_new_season_released = config.get('recent_days_new_season_released', 7)
         recent_days_episode_added = config.get('recent_days_episode_added', 7)
         recent_days_new_episode_released = config.get('recent_days_new_episode_released', 7)
-        
 
         utc_offset = float(config.get('utc_offset', 0))
         skip_unmonitored = str(config.get("skip_unmonitored", "false")).lower() == "true"
 
-        # Print chosen values
-        print(f"future_days_new_season: {future_days_new_season}")
-        print(f"future_days_upcoming_episode: {future_days_upcoming_episode}")
-        print(f"future_days_upcoming_finale: {future_days_upcoming_finale}")
-        print(f"recent_days_new_season_started: {recent_days_new_season_started}")
-        print(f"recent_days_season_finale: {recent_days_season_finale}")
-        print(f"recent_days_final_episode: {recent_days_final_episode}")
-        print(f"recent_days_new_show: {recent_days_new_show}")
-        print(f"recent_days_new_episode_added: {recent_days_new_episode_added}")
-        print(f"recent_days_fresh_espisode_added: {recent_days_fresh_espisode_added}")
-        print(f"recent_days_new_season_added: {recent_days_new_season_added}")
-        print(f"recent_days_episode_on_season: {recent_days_episode_on_season}")
-        print(f"recent_days_new_episode_on_season: {recent_days_new_episode_on_season}")
-        print(f"recent_days_season_added: {recent_days_season_added}")
-        print(f"recent_days_new_season_released: {recent_days_new_season_released}")
-        print(f"recent_days_episode_added: {recent_days_episode_added}")
-        print(f"recent_days_new_episode_released: {recent_days_new_episode_released}")
-        print(f"skip_unmonitored: {skip_unmonitored}\n")
-        print(f"UTC offset: {utc_offset} hours\n")
+        # ---- Plex Based Overlays ----
+        process_plex_overlays(config)
+
+        # ---- Sonarr Based Overlays and Collections ----
+        all_series_with_episodes = get_all_data_from_sonarr(sonarr_url, sonarr_api_key) # This function now prints its own headers
+        print(f"\n{AZUL}--- Iniciando Geração de Overlays e Coleções ---{RESET}")
 
         # Track all tvdbIds to exclude from other categories
+        all_skipped_shows = []
         all_excluded_tvdb_ids = set()
         
         # ---- Recent Season Finales ----
         season_finale_shows = find_recent_season_finales(
-            sonarr_url, sonarr_api_key, recent_days_season_finale, utc_offset, skip_unmonitored
+            all_series_with_episodes, recent_days_season_finale, utc_offset, skip_unmonitored
         )
-        
+         
         # Add to excluded IDs
         for show in season_finale_shows:
             if show.get('tvdbId'):
@@ -1865,19 +1563,20 @@ def main():
             for show in season_finale_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
-        create_overlay_yaml(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", season_finale_shows, 
-                           {"backdrop": config.get("backdrop_season_finale", {}),
-                            "text": config.get("text_season_finale", {})})
-
-        create_collection_yaml(collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", season_finale_shows, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "11_TSSK_TV_FIM_TEMPORADA_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_FIM_TEMPORADA_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, season_finale_shows,
+                           {"backdrop": config.get("backdrop_season_finale", {}), "text": config.get("text_season_finale", {})},
+                           no_date_needed=True, category_key="TSSK_final_de_temporada")
+        create_collection_yaml(collection_file, season_finale_shows, config,
+                               config_key="collection_season_finale",
+                               summary=f"Seriados com um final de temporada que foi ao ar nós últimos {recent_days_season_finale} dias")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
 
         # ---- Recent Final Episodes ----
         final_episode_shows = find_recent_final_episodes(
-            sonarr_url, sonarr_api_key, recent_days_final_episode, utc_offset
+            all_series_with_episodes, recent_days_final_episode, utc_offset, skip_unmonitored
         )
         
         # Add to excluded IDs
@@ -1890,23 +1589,25 @@ def main():
             for show in final_episode_shows:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) foi ao ar em {show['airDate']}")
         
-        create_overlay_yaml(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", final_episode_shows, 
-                           {"backdrop": config.get("backdrop_final_episode", {}),
-                            "text": config.get("text_final_episode", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", final_episode_shows, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "12_TSSK_TV_EPISODIO_FINAL_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_EPISODIO_FINAL_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, final_episode_shows,
+                           {"backdrop": config.get("backdrop_final_episode", {}), "text": config.get("text_final_episode", {})},
+                           no_date_needed=True, category_key="TSSK_episódio_final")
+        create_collection_yaml(collection_file, final_episode_shows, config,
+                               config_key="collection_final_episode",
+                               summary=f"Seriados com um episódio final que foi ao ar nós últimos {recent_days_final_episode} dias")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
 
         # Track all tvdbIds to exclude from the "returning" category
         all_included_tvdb_ids = set()
 
         # ---- New Season Shows ----
         matched_shows, skipped_shows = find_new_season_shows(
-            sonarr_url, sonarr_api_key, future_days_new_season, utc_offset, skip_unmonitored
+            all_series_with_episodes, future_days_new_season, utc_offset, skip_unmonitored
         )
+        all_skipped_shows.extend(skipped_shows)
         
         # Filter out shows that are in the season finale or final episode categories
         matched_shows = [show for show in matched_shows if show.get('tvdbId') not in all_excluded_tvdb_ids]
@@ -1924,20 +1625,19 @@ def main():
             print(f"\n{VERMELHO}Nenhum show com novas estações começando dentro de {future_days_new_season} dias.{RESET}")
         
         # Create YAMLs for new seasons
-        
-        create_overlay_yaml(overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", matched_shows, 
-                           {"backdrop": config.get("backdrop_new_season", config.get("backdrop", {})),
-                            "text": config.get("text_new_season", config.get("text", {}))})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", matched_shows, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_NOVA_TEMPORADA_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, matched_shows,
+                           {"backdrop": config.get("backdrop_new_season", {}), "text": config.get("text_new_season", {})})
+        create_collection_yaml(collection_file, matched_shows, config,
+                               config_key="collection_new_season",
+                               summary=f"Seriados com uma nova temporada começando dentro de {future_days_new_season} dias")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
 
         # ---- New Season Started ----
         new_season_started_shows = find_new_season_started(
-            sonarr_url, sonarr_api_key, recent_days_new_season_started, utc_offset, skip_unmonitored
+            all_series_with_episodes, recent_days_new_season_started, utc_offset, skip_unmonitored
         )
         
         # Add to excluded IDs
@@ -1950,20 +1650,22 @@ def main():
             for show in new_season_started_shows:
                 print(f"- {show['title']} (Temporada {show['seasonNumber']}) started on {show['airDate']}")
         
-        create_overlay_yaml(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", new_season_started_shows, 
-                           {"backdrop": config.get("backdrop_new_season_started", {}),
-                            "text": config.get("text_new_season_started", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", new_season_started_shows, config)
-
-        if IS_DOCKER:
-            os.chown(overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "07_TSSK_TV_NOVA_TEMPORADA_INICIADA_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_NOVA_TEMPORADA_INICIADA_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, new_season_started_shows,
+                           {"backdrop": config.get("backdrop_new_season_started", {}), "text": config.get("text_new_season_started", {})},
+                           no_date_needed=True, category_key="TSSK_nova_temporada_iniciada")
+        create_collection_yaml(collection_file, new_season_started_shows, config,
+                               config_key="collection_new_season_started",
+                               summary=f"Seriados com uma nova temporada que começou nos últimos {recent_days_new_season_started} dias")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
 
         # ---- Upcoming Non-Finale Episodes ----
         upcoming_eps, skipped_eps = find_upcoming_regular_episodes(
-            sonarr_url, sonarr_api_key, future_days_upcoming_episode, utc_offset, skip_unmonitored
+            all_series_with_episodes, future_days_upcoming_episode, utc_offset, skip_unmonitored
         )
+        all_skipped_shows.extend(skipped_eps)
         
         # Filter out shows that are in the season finale or final episode categories
         upcoming_eps = [show for show in upcoming_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
@@ -1977,21 +1679,24 @@ def main():
             print(f"\n{VERDE}Seriados com os próximos episódios não finas em  até {future_days_upcoming_episode} dias:{RESET}")
             for show in upcoming_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
+        else:
+            print(f"\n{VERMELHO}Nenhum seriado com episódios regulares futuros nos próximos {future_days_upcoming_episode} dias.{RESET}")
         
-        create_overlay_yaml(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", upcoming_eps, 
-                           {"backdrop": config.get("backdrop_upcoming_episode", {}),
-                            "text": config.get("text_upcoming_episode", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", upcoming_eps, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_PROXIMOS_EPISODIOS_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, upcoming_eps,
+                           {"backdrop": config.get("backdrop_upcoming_episode", {}), "text": config.get("text_upcoming_episode", {})})
+        create_collection_yaml(collection_file, upcoming_eps, config,
+                               config_key="collection_upcoming_episode",
+                               summary=f"Seriados com um próximo episódio dentro de {future_days_upcoming_episode} dias")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
         
         # ---- Upcoming Finale Episodes ----
         finale_eps, skipped_finales = find_upcoming_finales(
-            sonarr_url, sonarr_api_key, future_days_upcoming_finale, utc_offset, skip_unmonitored
+            all_series_with_episodes, future_days_upcoming_finale, utc_offset, skip_unmonitored
         )
+        all_skipped_shows.extend(skipped_finales)
         
         # Filtrar os programas que estão no final da temporada ou em categorias de episódios finais
         finale_eps = [show for show in finale_eps if show.get('tvdbId') not in all_excluded_tvdb_ids]
@@ -2005,135 +1710,30 @@ def main():
             print(f"\n{VERDE}Seriados com as próximas finais da temporada dentro de {future_days_upcoming_finale} dias:{RESET}")
             for show in finale_eps:
                 print(f"- {show['title']} (S{show['seasonNumber']}E{show['episodeNumber']}) vai ao ar em {show['airDate']}")
+        else:
+            print(f"\n{VERMELHO}Nenhum seriado com finais de temporada futuros nos próximos {future_days_upcoming_finale} dias.{RESET}")
         
-        create_overlay_yaml(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", finale_eps, 
-                           {"backdrop": config.get("backdrop_upcoming_finale", {}),
-                            "text": config.get("text_upcoming_finale", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", finale_eps, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml", puid, pgid)
-
-        # ---- Plex Based config ----
-        # ---- New Episode Added ----
-        create_new_episode_added_overlay_yaml(overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_episode_added"),
-                                    "text": get_config_section(config, "text_new_episode_added")}, 
-                                   recent_days_new_episode_added)
-        if IS_DOCKER:
-            os.chown(overlay_path + "03_TSSK_TV_NOVO_EPISODIO_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay Criada para série Que Tiveram um episódio adicionado recentemente em até {recent_days_new_episode_added} dias{RESET}")
-
-        # ---- Fresh New Episode Added ----
-        create_recent_new_episode_added_overlay_yaml(overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_recent_new_episode_added"),
-                                    "text": get_config_section(config, "text_recent_new_episode_added")}, 
-                                   recent_days_fresh_espisode_added)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado recentemente em até {recent_days_fresh_espisode_added} dias{RESET}")
-       
-        # ---- Fresh New Season Added ----
-        create_new_season_added_overlay_yaml(overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_season_added"),
-                                    "text": get_config_section(config, "text_new_season_added")}, 
-                                   recent_days_new_season_added)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay criada para series que tiveram um episódio Atual adicionado a temporada recentemente em até {recent_days_new_season_added} dias{RESET}")
-
-       # ---- New Show ----
-        create_new_show_overlay_yaml(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_show"),
-                                    "text": get_config_section(config, "text_new_show")}, 
-                                   recent_days_new_show)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "06_TSSK_TV_NOVO_SERIADO_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay de show criada para shows adicionados {recent_days_new_show} passados{RESET}")
-
-       # ---- Added Episode Season - Season depth ----
-        create_episode_on_season_overlay_yaml(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_episode_season"),
-                                    "text": get_config_section(config, "text_episode_season")}, 
-                                   recent_days_episode_on_season)
-        if IS_DOCKER:
-            os.chown(overlay_path + "13_TSSK_TV_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay para temporada com episódio adicionado nos últimos {recent_days_episode_on_season} dias{RESET}")
-
-       # ---- Added New Episode Season - Season depth ----
-        create_new_episode_on_season_overlay_yaml(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_episode_season"),
-                                    "text": get_config_section(config, "text_new_episode_season")}, 
-                                   recent_days_new_episode_on_season)
-        if IS_DOCKER:
-            os.chown(overlay_path + "14_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay para temporada com episódio Novo adicionadonos últimos {recent_days_new_episode_on_season} dias{RESET}")
-        
-               # ---- Added Season - Season depth ----
-        create_season_added_overlay_yaml(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_season_added"),
-                                    "text": get_config_section(config, "text_new_episode_season")}, 
-                                   recent_days_season_added)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "15_TSSK_TV_TEMPORADA_ADICIONADA_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay para temporada adicionada nos últimos {recent_days_season_added} dias{RESET}")
-
-               # ---- Temporada Recém-Lancada - Season depth ----
-        create_new_season_released_overlay_yaml(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_season_released"),
-                                    "text": get_config_section(config, "text_new_season_released")}, 
-                                   recent_days_new_season_released)
-        if IS_DOCKER:
-            os.chown(overlay_path + "16_TSSK_TV_NOVA_TEMPORADA_ADICIONADA_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay para Nova temporada adicionada nos últimos {recent_days_new_season_released} dias{RESET}")
-        
-        
-                       # ---- Episódio Recém-Adicionado - Episode depth ----
-        create_episode_added_overlay_yaml(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_episode_added"),
-                                    "text": get_config_section(config, "text_episode_added")}, 
-                                   recent_days_episode_added)
-        if IS_DOCKER:
-            os.chown(overlay_path + "17_TSSK_TV_EPISODIO_ADICIONADO_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_episode_added} dias{RESET}")
-
-                       # ---- Episódio Recém-Lançado - Episode depth ----
-        create_new_episode_released_overlay_yaml(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", 
-                                   {"backdrop": get_config_section(config, "backdrop_new_episode_released"),
-                                    "text": get_config_section(config, "text_new_episode_released")}, 
-                                   recent_days_new_episode_released)
-        if IS_DOCKER:
-            os.chown(overlay_path + "18_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml", puid, pgid) 
-        
-        print(f"\n{VERDE}Nova Overlay para Episódio adicionado nos últimos {recent_days_new_episode_released} days{RESET}")        
-        # ---- End Plex Based config ----
+        overlay_file = overlay_path + "10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_PROXIMOS_FINAIS_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, finale_eps,
+                           {"backdrop": config.get("backdrop_upcoming_finale", {}), "text": config.get("text_upcoming_finale", {})})
+        create_collection_yaml(collection_file, finale_eps, config,
+                               config_key="collection_upcoming_finale",
+                               summary=f"Seriados com um final de temporada dentro de {future_days_upcoming_finale} dias")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
 
         # ---- skipped Shows ----
-        if skipped_shows:
-            print(f"\n{LARANJA}Seriados (não monitorados ou novos shows):{RESET}")
-            for show in skipped_shows:
-                print(f"- {show['title']} (Temporada {show['seasonNumber']}) vai ao ar em {show['airDate']}")        
+        if all_skipped_shows:
+            print(f"\n{LARANJA}Seriados ignorados (não monitorados, novos shows, etc.):{RESET}")
+            for show in all_skipped_shows:
+                print(f"- {show.get('title', 'Título desconhecido')} (Motivo: {show.get('reason', 'Não especificado')})")
         
         # ---- Ended Shows ----
         # A função find_end_shows não possui um parâmetro skip_unmonitored
         # como é baseado no status do show, em vez de monitorar o status
         ended_shows, cancelled_shows = find_ended_shows(
-            sonarr_url, sonarr_api_key, tmdb_api_key
+            all_series_with_episodes, tmdb_api_key
         )
         # Filtrar os programas que estão no final da temporada ou em categorias de episódios finais
         ended_shows = [
@@ -2162,34 +1762,35 @@ def main():
         #            for show in cancelled_shows:
         #                print(f"- {show['title']}")
                         
-        create_overlay_yaml(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", cancelled_shows, 
-                           {"backdrop": config.get("backdrop_cancelled", {}),
-                            "text": config.get("text_cancelled", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", cancelled_shows, config)
-        
-        if IS_DOCKER:  
-            os.chown(overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "00_TSSK_TV_CANCELADOS_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_CANCELADOS_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, cancelled_shows,
+                           {"backdrop": config.get("backdrop_cancelled", {}), "text": config.get("text_cancelled", {})},
+                           no_date_needed=True, category_key="TSSK_cancelados")
+        create_collection_yaml(collection_file, cancelled_shows, config,
+                               config_key="collection_cancelled",
+                               summary="Seriados que foram cancelados.")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
 
         # ---- Ended Shows ----
         #if ended_shows:
         #            print(f"\n{VERDE}Seriados já Finalizados:{RESET}")
         #            for show in ended_shows:
         #                print(f"- {show['title']}")
-        
-        create_overlay_yaml(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", ended_shows, 
-                           {"backdrop": config.get("backdrop_ended", {}),
-                            "text": config.get("text_ended", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml", ended_shows, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "01_TSSK_TV_FINALIZADOS_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_FINALIZADOS_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, ended_shows,
+                           {"backdrop": config.get("backdrop_ended", {}), "text": config.get("text_ended", {})},
+                           no_date_needed=True, category_key="TSSK_finalizados")
+        create_collection_yaml(collection_file, ended_shows, config,
+                               config_key="collection_ended",
+                               summary="Seriados que já foram Finalizados.")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
         
         # ---- Returning Shows ----
-        returning_shows = find_returning_shows(sonarr_url, sonarr_api_key, all_included_tvdb_ids)
+        returning_shows = find_returning_shows(all_series_with_episodes, all_included_tvdb_ids)
         
         # Filter out shows that are in the season finale or final episode categories
         returning_shows = [show for show in returning_shows if show.get('tvdbId') not in all_excluded_tvdb_ids]
@@ -2198,16 +1799,16 @@ def main():
         #    print(f"\n{VERDE}Seriados que não foram cancelados, mas não tem data de retorno:{RESET}")
         #    for show in returning_shows:
         #        print(f"- {show['title']}")
-        
-        create_overlay_yaml(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", returning_shows, 
-                           {"backdrop": config.get("backdrop_returning", {}),
-                            "text": config.get("text_returning", {})})
-        
-        create_collection_yaml(collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml", returning_shows, config)
-        
-        if IS_DOCKER:
-            os.chown(overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml", puid, pgid)
-            os.chown(collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml", puid, pgid)
+        overlay_file = overlay_path + "02_TSSK_TV_RETORNANDO_OVERLAYS.yml"
+        collection_file = collection_path + "TSSK_TV_RETORNANDO_COLLECTION.yml"
+        create_overlay_yaml(overlay_file, returning_shows,
+                           {"backdrop": config.get("backdrop_returning", {}), "text": config.get("text_returning", {})},
+                           no_date_needed=True, category_key="TSSK_retornando")
+        create_collection_yaml(collection_file, returning_shows, config,
+                               config_key="collection_returning",
+                               summary="Seriados que tiveram seu retorno confirmado")
+        set_permissions(overlay_file)
+        set_permissions(collection_file)
         
         #Concatenar todos os arquivos overlay em um único arquivo, para serem aplicados de uma só vez.
         generate_all_in_one_overlays = str(config.get("generate_all_in_one_overlays", "false")).lower() == "true"
