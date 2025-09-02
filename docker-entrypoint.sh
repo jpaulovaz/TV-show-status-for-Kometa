@@ -9,7 +9,7 @@ cp -r /app/files/* /app/config/
 # Ajusta as permissões do diretório de configuração para que o appuser possa escrever nele.
 chown -R "${PUID}:${PGID}" /app/config
 
-# Escreve as variáveis e a função de rotação de logs em um arquivo para o cron
+# Escreve as variáveis e a função de rotação de logs em um arquivo para o cron. Foi necessário pois o LOG de eventos estava quebrando o cron
 cat > /app/.cron_env <<EOF
 export DOCKER="$DOCKER"
 export PUID="$PUID"
