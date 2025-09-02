@@ -6,10 +6,10 @@ tmdb_api_key: 'seu_api_tmdb'  #  API key TMDb
 skip_unmonitored: false
 
 #Gerar arquivos únicos de coleção e overlay, útil se deseja utilizar todos de uma vez.
-generate_all_in_one_overlays: false 
-delete_overlay_after_all_in_one: false 
-generate_all_in_one_collections: false
-delete_collections_after_all_in_one: false
+generate_all_in_one_overlays: true 
+delete_overlay_after_all_in_one: true 
+generate_all_in_one_collections: true
+delete_collections_after_all_in_one: true
 #Deslocamento de fuso-horario:
 utc_offset: +0
 
@@ -106,12 +106,12 @@ backdrop_returning:
   weight: 2
 
 text_returning:
-  use_text: "EM BREVE NOVOS EPISÓDIOS"
+  use_text: "RENOVADO PARA UMA NOVA TEMPORADA"
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
-  vertical_offset: 15
-  font_size: 65
+  vertical_offset: 20
+  font_size: 50
   font_color: "#ff9000" #MOSTARDA
   group: text_seriado
   weight: 2
@@ -151,7 +151,7 @@ text_new_episode_added:
 ################################################################################
 #Arquivo: 04_TSSK_TV_NOVO_RECENTE_EPISODIO_OVERLAYS.yml
 
-recent_days_fresh_espisode_added: 10
+recent_days_fresh_espisode_added: 7
 
 backdrop_recent_new_episode_added:
   enable: true
@@ -181,7 +181,7 @@ text_recent_new_episode_added:
 ################################################################################
 #Arquivo: 05_TSSK_TV_NOVO_EPISODIO_TEMPORADA_OVERLAYS.yml
 
-recent_days_new_season_added: 10
+recent_days_new_season_added: 15
 
 backdrop_new_season_added:
   enable: true
@@ -276,7 +276,7 @@ text_new_season_started:
 ################################################################################
 #Arquivo: 08_TSSK_TV_NOVA_TEMPORADA_OVERLAYS.yml
 
-future_days_new_season: 31
+future_days_new_season: 20
 
 collection_new_season:
   collection_name: "Nova Temporada em Breve"
@@ -314,7 +314,7 @@ text_new_season:
 ################################################################################
 #Arquivo: 09_TSSK_TV_PROXIMOS_EPISODIOS_OVERLAYS.yml
 
-future_days_upcoming_episode: 15
+future_days_upcoming_episode: 5
 
 collection_upcoming_episode:
   collection_name: "Próximo Episódio"
@@ -352,7 +352,7 @@ text_upcoming_episode:
 ################################################################################
 #Arquivo: 10_TSSK_TV_PROXIMOS_FINAIS_OVERLAYS.yml
 
-future_days_upcoming_finale: 15
+future_days_upcoming_finale: 5
 
 collection_upcoming_finale:
   collection_name: "Chegando ao Fim"
@@ -496,7 +496,7 @@ text_episode_season:
 ################################################################################
 #Arquivo: 02_TSSK_TV_NOVO_EPISODIO_NA_TEMPORADA_OVERLAYS.yml
 
-recent_days_new_episode_on_season: 10
+recent_days_new_episode_on_season: 7
 
 backdrop_new_episode_season:
   enable: true
@@ -594,7 +594,7 @@ backdrop_episode_added:
   enable: true
   back_color: "#E5091480" #VERMELHO
   back_height: 90
-  back_width: 1000
+  back_width: 2000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
@@ -618,13 +618,13 @@ text_episode_added:
 ################################################################################
 #Arquivo: 02_TSSK_TV_NOVO_EPISODIO_ADICIONADO_OVERLAYS.yml
 
-recent_days_new_episode_released: 10
+recent_days_new_episode_released: 7
 
 backdrop_new_episode_released:
   enable: true
   back_color: "#E5091480" #VERMELHO
   back_height: 90
-  back_width: 1000
+  back_width: 2000
   horizontal_align: center
   horizontal_offset: 0
   vertical_align: bottom
