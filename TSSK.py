@@ -1122,7 +1122,6 @@ def create_plex_overlay_yaml(output_file, config_sections,filter_config=""):
              }
     # -- Text Blocks --
 
-
     text_config = deepcopy(config_sections.get("text", {}))
     enable_text = text_config.pop("enable", "True")
     
