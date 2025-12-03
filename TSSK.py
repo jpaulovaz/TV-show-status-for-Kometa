@@ -922,11 +922,10 @@ def create_overlay_yaml(output_file, shows, config_sections, no_date_needed=Fals
     text_config = deepcopy(config_sections.get("text", {}))
     enable_text = text_config.pop("enable", True)
 
-    if enable_text and enable_backdrop == True:    
-        if not shows:
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write("#Nenhum seriado com correspondência encontrados")
-            return
+    if not shows:
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write("#Nenhum seriado com correspondência encontrados")
+        return
     
     # Group shows by date if available
     date_to_tvdb_ids = defaultdict(list)
@@ -987,9 +986,11 @@ def create_overlay_yaml(output_file, shows, config_sections, no_date_needed=Fals
             }
     if enable_text and enable_backdrop == True:
         final_output = {"overlays": overlays_dict}
+    else:
+        final_output = {"overlays": "#Nenhum seriado com correspondência encontrados"}
     
-        with open(output_file, "w", encoding="utf-8") as f:
-            yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
+    with open(output_file, "w", encoding="utf-8") as f:
+        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
 
 #################################PLEX BASED CONFIG#################################
 
@@ -1139,9 +1140,11 @@ def create_plex_overlay_yaml(output_file, config_sections,filter_config=""):
              }
     if enable_text and enable_backdrop == True:
         final_output = {"overlays": overlays_dict}
+    else:
+        final_output = {"overlays": "#Nenhum seriado com correspondência encontrados"}
     
-        with open(output_file, "w", encoding="utf-8") as f:
-            yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
+    with open(output_file, "w", encoding="utf-8") as f:
+        yaml.dump(final_output, f, sort_keys=False, allow_unicode=True)
     
 ################################# END PLEX BASED CONFIG#################################
 
