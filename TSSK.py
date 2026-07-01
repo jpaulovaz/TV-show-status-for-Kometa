@@ -12,6 +12,7 @@ IS_DOCKER = os.getenv("DOCKER", "false").lower() == "true"
 overlay_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 collection_path = "/app/config/kometa/tssk/"  if IS_DOCKER else "kometa/"
 VERSION = "3.3.1"
+DEFAULT_TZ = "America/Sao_Paulo"
 
 if sys.version_info >= (3, 7):
     import io
@@ -28,15 +29,42 @@ VERMELHO = '\033[31m'
 RESET = '\033[0m'
 BOLD = '\033[1m'
  
+def get_env_value(name, default):
+    """Retorna uma variável de ambiente com fallback também para valor vazio."""
+    value = os.getenv(name)
+    if value is None or not value.strip():
+        return default
+    return value.strip()
+
+
+def get_int_env_value(name, default):
+    """Retorna uma variável de ambiente inteira com fallback seguro."""
+    value = get_env_value(name, str(default))
+    try:
+        return int(value)
+    except ValueError:
+        print(f"{LARANJA}Valor inválido para {name}='{value}'. Usando {default}.{RESET}")
+        return default
+
+
+def get_user_timezone():
+    """Retorna o fuso horário configurado, usando DEFAULT_TZ se TZ vier vazio ou inválido."""
+    timezone_name = get_env_value("TZ", DEFAULT_TZ)
+    try:
+        return timezone_name, pytz.timezone(timezone_name)
+    except pytz.UnknownTimeZoneError:
+        print(f"{LARANJA}TZ inválido ou não reconhecido: '{timezone_name}'. Usando {DEFAULT_TZ}.{RESET}")
+        return DEFAULT_TZ, pytz.timezone(DEFAULT_TZ)
+
+
 #Exibe as informações das variaveis DOCKER, se docker.
 if IS_DOCKER:
     os.makedirs("/app/config/kometa/tssk", exist_ok=True)
-    PUID = int(os.getenv("PUID", "1000"))
-    PGID = int(os.getenv("PGID", "1000"))
-    TZ = os.getenv("TZ", "America/Sao_Paulo").upper()
-    user_tz = pytz.timezone(TZ)
+    PUID = get_int_env_value("PUID", 1000)
+    PGID = get_int_env_value("PGID", 1000)
+    TZ, user_tz = get_user_timezone()
     print(f"{AZUL}{'*' * 40}\nDOCKER: {VERMELHO}{IS_DOCKER}")
-    print(f"{AZUL}PUID: {VERMELHO}{PUID}\n{AZUL}PGID: {VERMELHO}{PGID}{AZUL}\n{'*' * 40}\n{RESET}")
+    print(f"{AZUL}PUID: {VERMELHO}{PUID}\n{AZUL}PGID: {VERMELHO}{PGID}\n{AZUL}TZ: {VERMELHO}{TZ}{AZUL}\n{'*' * 40}\n{RESET}")
 
 def check_for_updates():
     print(f"{VERDE}Verificando atualizações para TSSK {VERSION}...")
